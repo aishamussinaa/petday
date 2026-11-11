@@ -40,6 +40,7 @@ model Pet {
   notes            String   @default("") @db.VarChar(4000)
   tasks            CareTask[]
   routines         CareRoutine[]
+  healthRecords    HealthRecord[]
   photoKey         String?  @unique @db.VarChar(64)
   version          Int      @default(1)
   createdAt        DateTime @default(now())
@@ -105,4 +106,23 @@ model CareRoutine {
   createdAt DateTime @default(now())
   tasks CareTask[]
   @@index([petId, startDay])
+}
+
+model HealthRecord {
+  id String @id @db.Uuid
+  petId String @db.Uuid
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  kind String @db.VarChar(12)
+  status String @default("planned") @db.VarChar(12)
+  title String @db.VarChar(120)
+  date DateTime @db.Date
+  nextDate DateTime? @db.Date
+  clinic String @default("") @db.VarChar(160)
+  vet String @default("") @db.VarChar(120)
+  notes String @default("") @db.VarChar(4000)
+  version Int @default(1)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([petId, date])
 }
