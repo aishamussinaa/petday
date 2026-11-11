@@ -39,6 +39,7 @@ model Pet {
   allergies        String   @default("") @db.VarChar(2000)
   notes            String   @default("") @db.VarChar(4000)
   tasks            CareTask[]
+  routines         CareRoutine[]
   photoKey         String?  @unique @db.VarChar(64)
   version          Int      @default(1)
   createdAt        DateTime @default(now())
@@ -62,6 +63,10 @@ model CareTask {
   category String @db.VarChar(12)
   time String @default("") @db.VarChar(5)
   notes String @default("") @db.VarChar(1000)
+  targetCount Int @default(1)
+  completedCount Int @default(0)
+  routineId String? @db.Uuid
+  routine CareRoutine? @relation(fields: [routineId], references: [id], onDelete: SetNull)
   completedAt DateTime?
   deletedAt DateTime?
   version Int @default(1)
@@ -69,15 +74,35 @@ model CareTask {
   updatedAt DateTime @updatedAt
   events CareEvent[]
   @@index([petId, day])
+  @@unique([routineId, day])
 }
 model CareEvent {
   id String @id @default(uuid()) @db.Uuid
   taskId String @db.Uuid
   task CareTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  completedCount Int?
+  targetCount Int?
   action String @db.VarChar(16)
   title String @db.VarChar(120)
   version Int
   createdAt DateTime @default(now())
   @@unique([taskId, version])
   @@index([createdAt])
+}
+
+model CareRoutine {
+  id String @id @db.Uuid
+  petId String @db.Uuid
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  title String @db.VarChar(120)
+  category String @db.VarChar(12)
+  time String @default("") @db.VarChar(5)
+  notes String @default("") @db.VarChar(1000)
+  targetCount Int @default(1)
+  weekdays Int[]
+  startDay DateTime @db.Date
+  stopDay DateTime? @db.Date
+  createdAt DateTime @default(now())
+  tasks CareTask[]
+  @@index([petId, startDay])
 }

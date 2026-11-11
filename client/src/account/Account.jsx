@@ -8,14 +8,15 @@ import { RouteLink, useRoute } from '../routing.jsx';
 import { calendarAge, dayDistance, nextBirthday, dateOnly, formatDate } from '../dateUtils.js';
 import { request, restoreSession } from './api.js';
 import Today from './Today.jsx';
+import BirthdayCard from './BirthdayCard.jsx';
 import './today.css';
 import PetForm, { ErrorMessage } from './PetForm.jsx';
 
 export const localBirth = value => { const [y, m, d] = value.split('-').map(Number); return new Date(y, m - 1, d, 12); };
-function BirthDetails({ pet }) {
+function BirthDetails({ pet, today }) {
   const { t, i18n } = useTranslation();
   if (!pet.birthDate) return <p className="muted">{t('account.birthUnknown')}</p>;
-  const birth = localBirth(pet.birthDate), today = dateOnly(new Date());
+  const birth = localBirth(pet.birthDate);
   const age = calendarAge(birth, today);
   const days = dayDistance(today, nextBirthday(birth, today));
   const ageText = [['year', age.years], ['month', age.months], ['day', age.days]].filter(([, count]) => count > 0).map(([unit, count]) => t(`account.${unit}`, { count })).join(', ') || t('account.day', { count: 0 });
@@ -54,6 +55,16 @@ function Authentication({ onUser, initialError, retry }) {
 export default function Account() {
   const { t, i18n } = useTranslation();
   const { navigate } = useRoute();
+  const [today, setToday] = useState(() => dateOnly(new Date()));
+  useEffect(() => {
+    const update = () => {
+      const next = dateOnly(new Date());
+      setToday(previous => previous.getTime() === next.getTime() ? previous : next);
+    };
+    const timer = setInterval(update, 30000);
+    document.addEventListener('visibilitychange', update);
+    return () => { clearInterval(timer); document.removeEventListener('visibilitychange', update); };
+  }, []);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -91,17 +102,18 @@ export default function Account() {
   return <div className="account-page"><header className="account-header"><RouteLink className="brand" href="/" aria-label={t('landing.home')}><Brand /></RouteLink><LanguageSwitch /><RouteLink href="/demo" className="account-demo-link">{t('landing.openDemo')}</RouteLink>{user && <button disabled={busy} className="button secondary" onClick={logout}>{t('account.logout')}</button>}</header>
     <main className="account-main" tabIndex={-1}>
       {loading ? <p role="status">{t('account.loading')}</p> : !user ? <Authentication onUser={loggedIn} initialError={error} retry={load} /> : <>
-        <header className="account-title"><div><p className="date-line">{formatDate(new Date(), i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}</p><h1>{t('account.myPets')}</h1><p className="account-email">{user.email}</p></div><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form' }); }}><Icon name="plus" />{t('account.addPet')}</button></header>
+        <header className="account-title"><div><p className="date-line">{formatDate(today, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}</p><h1>{t('account.myPets')}</h1><p className="account-email">{user.email}</p></div><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form' }); }}><Icon name="plus" />{t('account.addPet')}</button></header>
         <nav className="account-nav" aria-label={t('navigation')}>{['pets', 'today', 'food', 'health'].map(value => <button key={value} aria-current={section === value ? 'page' : undefined} onClick={() => setSection(value)}><Icon name={value} size={20} />{t(`nav.${value}`)}</button>)}</nav>
         <ErrorMessage error={error} />{error && <button className="button secondary" onClick={load}>{t('account.retry')}</button>}
         {!pets.length && !error ? <section className="account-empty"><div className="photo-placeholder"><Icon name="paw" size={66} /></div><h2>{t('account.emptyTitle')}</h2><p>{t('account.emptyText')}</p><button className="button primary" onClick={() => setModal({ type: 'form' })}>{t('account.addFirst')}</button><p className="small muted">{t('account.privateHint')}</p></section> : pets.length > 0 && <>
           <div className="real-pet-selector" role="group" aria-label={t('selectPet')}>{pets.map(item => <button key={item.id} aria-pressed={pet?.id === item.id} onClick={() => setSelected(item.id)}><Photo pet={item} /><span>{item.name}</span></button>)}</div>
-          {section === 'pets' ? <div className="account-pet-grid">{pets.map(item => <article className={`pet-card real-pet-card ${item.id === pet?.id ? 'is-selected' : ''}`} key={item.id}><Photo pet={item} /><div className="pet-card-content"><h2>{item.name}</h2><p className="muted">{t(`account.speciesOptions.${item.species}`)}{item.breed && ` · ${item.breed}`}</p><BirthDetails pet={item} /><div className="account-card-actions"><button className="button secondary" onClick={() => setModal({ type: 'profile', pet: item })}>{t('viewProfile')}</button><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form', pet: item }); }}>{t('account.edit')}</button></div></div></article>)}</div> : section === 'today' ? <Today key={pet.id} pet={pet} /> : <section className="account-empty account-unavailable"><Icon name={section} size={44} /><h2>{t(`nav.${section}`)} · {pet.name}</h2><p>{t(`account.notConnected.${section}`)}</p><RouteLink className="button secondary" href="/demo">{t('landing.openDemo')}</RouteLink></section>}
+          <BirthdayCard pet={pet} now={today} />
+          {section === 'pets' ? <div className="account-pet-grid">{pets.map(item => <article className={`pet-card real-pet-card ${item.id === pet?.id ? 'is-selected' : ''}`} key={item.id}><Photo pet={item} /><div className="pet-card-content"><h2>{item.name}</h2><p className="muted">{t(`account.speciesOptions.${item.species}`)}{item.breed && ` · ${item.breed}`}</p><BirthDetails pet={item} today={today} /><div className="account-card-actions"><button className="button secondary" onClick={() => setModal({ type: 'profile', pet: item })}>{t('viewProfile')}</button><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form', pet: item }); }}>{t('account.edit')}</button></div></div></article>)}</div> : section === 'today' ? <Today key={pet.id} pet={pet} /> : <section className="account-empty account-unavailable"><Icon name={section} size={44} /><h2>{t(`nav.${section}`)} · {pet.name}</h2><p>{t(`account.notConnected.${section}`)}</p><RouteLink className="button secondary" href="/demo">{t('landing.openDemo')}</RouteLink></section>}
         </>}
       </>}
     </main><footer className="account-footer"><RouteLink href="/">{t('landing.backHome')}</RouteLink><span>PetDay</span></footer>
     {modal?.type === 'form' && <PetForm pet={modal.pet} onClose={() => setModal(null)} onSaved={saved} />}
-    {modal?.type === 'profile' && <Modal title={modal.pet.name} onClose={() => setModal(null)}><div className="real-profile"><Photo pet={modal.pet} /><BirthDetails pet={modal.pet} /><dl className="profile-details">{['species', 'breed', 'sex', 'features', 'allergies', 'notes'].map(key => <div key={key}><dt>{t(`account.${key}`)}</dt><dd>{key === 'species' ? t(`account.speciesOptions.${modal.pet[key]}`) : key === 'sex' ? t(`account.sexOptions.${modal.pet[key]}`) : modal.pet[key] || t('notSpecified')}</dd></div>)}</dl><div className="modal-actions"><button className="button danger" onClick={() => { setError(null); setModal({ type: 'delete', pet: modal.pet }); }}>{t('account.delete')}</button><button className="button primary" onClick={() => setModal({ type: 'form', pet: modal.pet })}>{t('account.edit')}</button></div></div></Modal>}
+    {modal?.type === 'profile' && <Modal title={modal.pet.name} onClose={() => setModal(null)}><div className="real-profile"><Photo pet={modal.pet} /><BirthDetails pet={modal.pet} today={today} /><dl className="profile-details">{['species', 'breed', 'sex', 'features', 'allergies', 'notes'].map(key => <div key={key}><dt>{t(`account.${key}`)}</dt><dd>{key === 'species' ? t(`account.speciesOptions.${modal.pet[key]}`) : key === 'sex' ? t(`account.sexOptions.${modal.pet[key]}`) : modal.pet[key] || t('notSpecified')}</dd></div>)}</dl><div className="modal-actions"><button className="button danger" onClick={() => { setError(null); setModal({ type: 'delete', pet: modal.pet }); }}>{t('account.delete')}</button><button className="button primary" onClick={() => setModal({ type: 'form', pet: modal.pet })}>{t('account.edit')}</button></div></div></Modal>}
     {modal?.type === 'delete' && <Modal title={t('account.deleteTitle', { name: modal.pet.name })} onClose={() => { if (!busy) setModal(null); }}><p className="delete-explanation">{t('account.deleteText', { name: modal.pet.name })}</p><ErrorMessage error={error} /><div className="modal-actions"><button className="button secondary" disabled={busy} onClick={() => setModal(null)}>{t('cancel')}</button><button className="button danger" disabled={busy} onClick={remove}>{t(busy ? 'account.wait' : 'account.confirmDelete')}</button></div></Modal>}
   </div>;
 }

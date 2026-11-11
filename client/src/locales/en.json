@@ -325,7 +325,9 @@
       "completed": "Completed: {{title}}",
       "reopened": "Reopened: {{title}}",
       "edited": "Edited: {{title}}",
-      "deleted": "Removed from plan: {{title}}"
+      "deleted": "Removed from plan: {{title}}",
+      "progressed": "Completion added: {{title}}",
+      "reduced": "Completion undone: {{title}}"
     },
     "errors": {
       "TASK_TITLE": "Enter a name of 1–120 characters.",
@@ -335,7 +337,59 @@
       "TASK_NOTES": "Keep the note within 1000 characters.",
       "TASK_CHANGED": "This task changed in another window. Check the updated list and try again.",
       "TASK_NOT_FOUND": "This task was removed or is unavailable.",
-      "TASK_FUTURE": "Future tasks cannot be completed yet."
-    }
+      "TASK_FUTURE": "Future tasks cannot be completed yet.",
+      "TASK_TARGET": "Enter a whole number from 1 to 20.",
+      "TASK_COUNT": "The count must stay within the target. Refresh the list.",
+      "TASK_WEEKDAYS": "Select at least one weekday.",
+      "TASK_TARGET_BELOW_COUNT": "The target cannot be below the completed count. Undo extra completions first."
+    },
+    "target": "Times per day",
+    "targetHint": "For example, 3 walks. Between 1 and 20 completions.",
+    "repeat": "Repeat",
+    "repeatOptions": {
+      "once": "Once",
+      "daily": "Every day",
+      "weekly": "Selected weekdays"
+    },
+    "weekdaysLabel": "Weekdays",
+    "weekdays": {
+      "0": "Sun",
+      "1": "Mon",
+      "2": "Tue",
+      "3": "Wed",
+      "4": "Thu",
+      "5": "Fri",
+      "6": "Sat"
+    },
+    "startsOn": "Starting {{date}}",
+    "editOneDay": "Changes apply only to {{date}}. Other days keep their schedule.",
+    "goalProgress": "{{done}} of {{total}}",
+    "routineTarget": "Daily target: {{total}}",
+    "goalLabel": "Progress: {{title}}",
+    "plus": "+1 done",
+    "minus": "Undo one",
+    "plusLabel": "Add completion: {{title}}",
+    "minusLabel": "Undo completion: {{title}}",
+    "fromRoutine": "Scheduled",
+    "routines": "Repeating tasks",
+    "routinesHint": "Tasks appear automatically on matching dates, even after the site was closed. To change a schedule, stop it and create a new one.",
+    "stop": "Stop repeating",
+    "stopConfirm": "Stop “{{title}}” from tomorrow? Today’s tasks and past history stay. Future tasks from this schedule will leave the plan."
+  },
+  "party": {
+    "label": "Pet birthday",
+    "until": "until the birthday",
+    "soon": "A celebration is coming",
+    "today": "Today is a special day",
+    "title": "Happy birthday, {{name}}!",
+    "countdown_one": "{{name}}: {{count}} day until the birthday",
+    "countdown_other": "{{name}}: {{count}} days until the birthday",
+    "prepare": "Time to plan a little celebration and choose a favourite game.",
+    "wish": "Here’s to happy walks, favourite games and plenty of cuddles!",
+    "approximate": "The birth date is approximate — we celebrate using the profile date.",
+    "replay": "More confetti!",
+    "motionOff": "Turn animation off",
+    "motionOn": "Turn animation on",
+    "reduced": "Animation is disabled in your device settings."
   }
 }
