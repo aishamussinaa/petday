@@ -16,12 +16,13 @@
     "db:migrate": "node --env-file-if-exists=.env node_modules/prisma/build/index.js migrate deploy",
     "db:check": "node --env-file-if-exists=.env scripts/check-database.mjs",
     "db:cleanup": "node --env-file-if-exists=.env scripts/cleanup-uploads.mjs",
-    "test:unit": "node --test tests/server-unit.test.mjs",
+    "test:unit": "node --test tests/server-unit.test.mjs tests/postgres-recovery.test.cjs",
     "test": "node --env-file-if-exists=.env node_modules/@playwright/test/cli.js test"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",
     "concurrently": "10.0.6",
     "prisma": "7.10.1"
-  }
+  },
+  "type": "module"
 }

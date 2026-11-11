@@ -1,5 +1,6 @@
 import express from 'express';
 import { auth } from './auth.js';
+import { tasks } from './tasks.js';
 import { pets } from './pets.js';
 
 export const app = express();
@@ -9,6 +10,7 @@ app.use((_req, res, next) => { res.set({ 'X-Content-Type-Options': 'nosniff', 'R
 app.use(express.json({ limit: '32kb' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', auth);
+app.use('/api/pets/:petId/tasks', tasks);
 app.use('/api/pets', pets);
 app.use('/api', (_req, res) => res.status(404).json({ error: { code: 'API_NOT_FOUND' } }));
 app.use((_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND' } }));

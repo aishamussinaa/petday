@@ -1,75 +1,103 @@
-// Run locally in an elevated Windows terminal. No database is dropped or stopped.
-// A narrowly scoped loopback rule is restored in finally, including on errors.
+// Windows PostgreSQL 18 recovery. Run interactively as Administrator.
+// Password entry/encryption is handled by psql, never by this JavaScript program.
 const fs = require('node:fs');
-const crypto = require('node:crypto');
+const path = require('node:path');
+const os = require('node:os');
 const { spawnSync } = require('node:child_process');
-const readline = require('node:readline/promises');
-const { Writable } = require('node:stream');
-const data = 'C:\\Program Files\\PostgreSQL\\18\\data';
-const bin = 'C:\\Program Files\\PostgreSQL\\18\\bin';
-const hba = `${data}\\pg_hba.conf`;
-const backup = `${hba}.petday-password-backup`;
-const rule = '# PetDay temporary password recovery - restore immediately\r\nhost postgres postgres 127.0.0.1/32 trust\r\n';
-const output = new Writable({ write(chunk, encoding, done) { if (!output.muted) process.stdout.write(chunk); done(); } });
-const rl = readline.createInterface({ input: process.stdin, output, terminal: true });
-let changed = false;
-function reload() {
-  const result = spawnSync(`${bin}\\pg_ctl.exe`, ['reload', '-D', data], { encoding: 'utf8', windowsHide: true });
-  if (result.status !== 0) throw new Error('Не удалось перечитать правила PostgreSQL. Запустите этот скрипт с --restore от имени администратора.');
+const data = 'C:/Program Files/PostgreSQL/18/data';
+const bin = 'C:/Program Files/PostgreSQL/18/bin';
+const rule = Buffer.from('# PetDay temporary password recovery - restore immediately\r\nhost postgres postgres 127.0.0.1/32 trust\r\n');
+
+function recoveryFiles(hba) {
+  const backup = `${hba}.petday-password-backup`;
+  return {
+    enable() {
+      // Exclusive backup prevents overlapping recovery attempts.
+      fs.copyFileSync(hba, backup, fs.constants.COPYFILE_EXCL);
+      try { fs.writeFileSync(hba, Buffer.concat([rule, fs.readFileSync(backup)])); }
+      catch (error) { fs.copyFileSync(backup, hba); fs.unlinkSync(backup); throw error; }
+    },
+    restore() {
+      const original = fs.readFileSync(backup);
+      const current = fs.readFileSync(hba);
+      if (current.subarray(0, rule.length).equals(rule)) {
+        // Remove only our prefix, preserving unrelated edits and original bytes.
+        fs.writeFileSync(hba, current.subarray(rule.length));
+      } else if (!current.equals(original)) {
+        throw new Error('Правила изменились другим процессом. Резервная копия сохранена; нужна ручная проверка pg_hba.conf.');
+      }
+      fs.unlinkSync(backup);
+    },
+    exists: () => fs.existsSync(backup),
+  };
 }
-function restore() {
-  if (!fs.existsSync(backup)) throw new Error('Резервная копия не найдена; правила не менялись.');
-  const current = fs.readFileSync(hba, 'utf8');
-  if (current.startsWith(rule)) fs.writeFileSync(hba, current.slice(rule.length));
-  else if (!fs.readFileSync(hba).equals(fs.readFileSync(backup))) throw new Error('Правила изменены другим процессом. Не перезаписываю их; нужна ручная проверка pg_hba.conf.');
-  reload(); changed = false;
-  fs.unlinkSync(backup);
-  console.log('Исходные правила проверки пароля восстановлены.');
+function withRecovery(files, action) {
+  files.enable();
+  try { return action(); } finally { files.restore(); }
 }
-function query(sql, password = '') {
-  return spawnSync(`${bin}\\psql.exe`, ['-X', '-w', '-h', '127.0.0.1', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-tA'], {
-    input: sql, encoding: 'utf8', windowsHide: true, env: { ...process.env, PGPASSWORD: password, PGCONNECT_TIMEOUT: '3', LC_MESSAGES: 'C' },
-  });
-}
-async function secret(prompt) {
-  process.stdout.write(prompt); output.muted = true;
-  try { return await rl.question(''); } finally { output.muted = false; process.stdout.write('\n'); }
-}
-async function main() {
-  if (process.argv.includes('--restore')) { restore(); return; }
+
+function main() {
+  if (process.platform !== 'win32') throw new Error('Этот помощник предназначен для PostgreSQL 18 в Windows.');
+  const hba = path.join(data, 'pg_hba.conf');
+  const files = recoveryFiles(hba);
+  if (process.argv.includes('--restore')) { files.restore(); console.log('Исходные правила восстановлены.'); return; }
+  if (!process.stdin.isTTY) throw new Error('Запустите помощник в отдельном интерактивном PowerShell от имени администратора.');
   fs.accessSync(hba, fs.constants.R_OK | fs.constants.W_OK);
-  if (fs.existsSync(backup)) throw new Error('Есть незавершённое восстановление. Сначала выполните этот скрипт с --restore.');
-  console.log('Будет изменён только пароль локального postgres. Базы и данные сохраняются.');
-  const password = await secret('Новый пароль postgres (от 12 символов, не отображается): ');
-  if (password.length < 12) throw new Error('Пароль должен содержать минимум 12 символов. Настройки не изменены.');
-  if (password !== await secret('Повторите новый пароль: ')) throw new Error('Пароли не совпали. Настройки не изменены.');
-  // Send a SCRAM verifier, never the plaintext password, in the ALTER ROLE statement.
-  const salt = crypto.randomBytes(16);
-  const salted = crypto.pbkdf2Sync(password.normalize('NFKC'), salt, 4096, 32, 'sha256');
-  const client = crypto.createHmac('sha256', salted).update('Client Key').digest();
-  const stored = crypto.createHash('sha256').update(client).digest('base64');
-  const server = crypto.createHmac('sha256', salted).update('Server Key').digest('base64');
-  const verifier = `SCRAM-SHA-256$4096:${salt.toString('base64')}$${stored}:${server}`;
-  fs.copyFileSync(hba, backup, fs.constants.COPYFILE_EXCL);
-  try {
-    fs.writeFileSync(hba, Buffer.concat([Buffer.from(rule), fs.readFileSync(backup)])); changed = true; reload();
-    let ready = false;
-    for (let attempt = 0; attempt < 10; attempt++) {
-      if (query('SELECT 1;').status === 0) { ready = true; break; }
-      await new Promise(resolve => setTimeout(resolve, 250));
-    }
-    if (!ready) throw new Error('Временный доступ не открылся. Пароль не изменён.');
-    if (query(`ALTER ROLE postgres PASSWORD '${verifier}';`).status !== 0) throw new Error('Смена пароля не выполнена.');
-  } finally { if (changed) restore(); }
-  // Wait until the server has reloaded password authentication; trust must be gone.
-  for (let attempt = 0; attempt < 10; attempt++) {
-    if (query('SELECT 1;').status !== 0) {
-      if (query('SELECT 1;', password).status !== 0) throw new Error('Правила восстановлены, но новый пароль не прошёл проверку.');
-      console.log('Готово: новый пароль работает, вход без пароля запрещён. Теперь запустите node scripts/setup-database.cjs.'); return;
-    }
-    await new Promise(resolve => setTimeout(resolve, 250));
+  if (files.exists()) throw new Error('Есть незавершённое восстановление. Выполните node scripts/reset-postgres-password.cjs --restore.');
+  if (!fs.existsSync(path.join(bin, 'psql.exe'))) throw new Error('Не найден psql.exe PostgreSQL 18.');
+  // Ignore inherited connection settings and any saved password file.
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'petday-login-'));
+  const passfile = path.join(temp, 'empty.pgpass'); fs.writeFileSync(passfile, '');
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^PG/i.test(key)));
+  Object.assign(env, { PGPASSFILE: passfile, PGCONNECT_TIMEOUT: '5', PGCLIENTENCODING: 'UTF8' });
+  const args = ['-X', '-h', '127.0.0.1', '-p', '5432', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-tA'];
+  function run(commands, interactive = false, forcePassword = false) {
+    const result = spawnSync(path.join(bin, 'psql.exe'), [...args, forcePassword ? '-W' : '-w', ...commands.flatMap(command => ['-c', command])], {
+      env, encoding: 'utf8', windowsHide: true, stdio: interactive ? 'inherit' : 'pipe',
+      ...(interactive ? {} : { timeout: 10000 }),
+    });
+    if (result.error) throw new Error(`Не удалось запустить psql: ${result.error.code || 'PROCESS_ERROR'}`);
+    return result;
   }
-  throw new Error('Файл восстановлен, но сервер ещё принимает вход без пароля. Нужна проверка перечитывания правил.');
+  let active = false;
+  const restoreOnExit = () => {
+    if (active && files.exists()) {
+      try { files.restore(); active = false; } catch { console.error('Выполните --restore от имени администратора.'); }
+    }
+  };
+  process.on('exit', restoreOnExit);
+  try {
+    console.log('Меняется только пароль postgres. Базы и данные сохраняются.');
+    console.log('Во время ввода временно разрешён вход postgres только с этого компьютера в базу postgres.');
+    console.log('Не закрывайте окно. Придумайте и сохраните пароль от 12 символов. Введите его дважды в запросах psql.');
+    withRecovery(files, () => {
+      active = true;
+      // Windows applies pg_hba.conf changes immediately to new connections.
+      const connected = run(['SHOW data_directory;']);
+      if (connected.status !== 0) throw new Error('Этап 1: нет подключения к локальному PostgreSQL 18. Пароль не менялся.');
+      if (path.resolve(connected.stdout.trim()).toLowerCase() !== path.resolve(data).toLowerCase()) throw new Error('Этап 1: порт 5432 обслуживает другой экземпляр PostgreSQL. Пароль не менялся.');
+      console.log('Этап 1: нужный сервер доступен.');
+      const changed = run(["SET password_encryption = 'scram-sha-256';", '\\password postgres'], true);
+      if (changed.status !== 0) throw new Error('Этап 2: psql не подтвердил смену пароля.');
+      console.log('Этап 2: команда смены пароля выполнена.');
+    });
+    active = false;
+    console.log('Этап 3: исходные правила авторизации восстановлены.');
+    if (run(['SELECT 1;']).status === 0) throw new Error('Вход без пароля всё ещё разрешён исходными правилами. Нужна проверка конфигурации.');
+    console.log('Теперь введите НОВЫЙ пароль ещё один раз для проверки входа.');
+    if (run(['SELECT 1;'], true, true).status !== 0) throw new Error('Этап 4: вход не подтверждён. Правила уже восстановлены. Сохраните сообщение psql без пароля.');
+    console.log('ГОТОВО: новый пароль работает; вход без пароля отклонён.');
+    console.log('Следующая команда: node scripts/setup-database.cjs');
+  } finally {
+    restoreOnExit(); process.removeListener('exit', restoreOnExit);
+    fs.unlinkSync(passfile); fs.rmdirSync(temp);
+  }
 }
-process.on('SIGINT', () => { try { if (changed) restore(); } finally { process.exit(130); } });
-main().catch(error => { console.error(error.code === 'EACCES' || error.code === 'EPERM' ? 'Откройте PowerShell от имени администратора и повторите команду. Настройки не изменены.' : error.message); process.exitCode = 1; }).finally(() => rl.close());
+module.exports = { recoveryFiles, withRecovery, rule };
+if (require.main === module) {
+  try { main(); }
+  catch (error) {
+    console.error(['EACCES','EPERM'].includes(error.code) ? 'Нужен PowerShell от имени администратора. Если операция началась, выполните --restore.' : error.message);
+    process.exitCode = 1;
+  }
+}

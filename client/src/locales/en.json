@@ -285,5 +285,57 @@
     "month_other": "{{count}} months",
     "day_one": "{{count}} day",
     "day_other": "{{count}} days"
+  },
+  "today": {
+    "heading": "Plan for {{name}}",
+    "eyebrow": "Everyday care",
+    "add": "Add task",
+    "edit": "Edit",
+    "delete": "Delete task",
+    "title": "Task name",
+    "category": "Category",
+    "time": "Time (optional)",
+    "notes": "Note",
+    "oneDay": "Task for {{date}}. Repeating schedules are not available yet.",
+    "date": "Plan date",
+    "previous": "Previous day",
+    "next": "Next day",
+    "loading": "Loading tasks…",
+    "progress": "{{done}} of {{total}} completed",
+    "progressLabel": "Daily progress",
+    "empty": "No tasks for this day yet",
+    "emptyText": "Add a feeding, walk or another care task for your pet.",
+    "anyTime": "Any time",
+    "toggle": "Complete: {{title}}",
+    "doneAt": "Completed: {{time}}",
+    "futureHint": "Future date: plan tasks now and mark them complete from that date onward.",
+    "history": "Activity for the selected day",
+    "noHistory": "No activity yet.",
+    "historyHint": "Latest 100 actions for tasks on this date. Times use your device settings.",
+    "deleteConfirm": "Remove “{{title}}” from the plan? Activity history will remain.",
+    "categories": {
+      "food": "Feeding",
+      "water": "Water",
+      "walk": "Walk",
+      "care": "Grooming",
+      "other": "Other"
+    },
+    "events": {
+      "created": "Added: {{title}}",
+      "completed": "Completed: {{title}}",
+      "reopened": "Reopened: {{title}}",
+      "edited": "Edited: {{title}}",
+      "deleted": "Removed from plan: {{title}}"
+    },
+    "errors": {
+      "TASK_TITLE": "Enter a name of 1–120 characters.",
+      "TASK_DATE": "Choose a valid date from 1900 through 2100.",
+      "TASK_CATEGORY": "Choose a category.",
+      "TASK_TIME": "Enter a time in HH:MM format.",
+      "TASK_NOTES": "Keep the note within 1000 characters.",
+      "TASK_CHANGED": "This task changed in another window. Check the updated list and try again.",
+      "TASK_NOT_FOUND": "This task was removed or is unavailable.",
+      "TASK_FUTURE": "Future tasks cannot be completed yet."
+    }
   }
 }

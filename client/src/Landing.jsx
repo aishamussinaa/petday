@@ -11,9 +11,9 @@ import { useDemo } from './data/DemoContext.jsx';
 import { Schedule, Progress } from './App.jsx';
 import { formatDate, formatTime } from './dateUtils.js';
 
-function DemoLink({ className = '', label }) {
+function DemoLink({ className = '', label, href = '/demo' }) {
   const { t } = useTranslation();
-  return <RouteLink className={`editorial-button ${className}`} href="/demo"><span>{label || t('landing.openDemo')}</span><Icon name="arrow" size={21} /></RouteLink>;
+  return <RouteLink className={`editorial-button ${className}`} href={href}><span>{label || t('landing.openDemo')}</span><Icon name="arrow" size={21} /></RouteLink>;
 }
 
 function Preview() {
@@ -96,7 +96,7 @@ export default function Landing() {
     <header className="floating-header">
       <RouteLink className="logo-link" href="/" aria-label={t('landing.home')}><Brand /></RouteLink>
       <nav className="desktop-links" aria-label={t('navigation')}><a href="#features">{t('landing.featuresLabel')}</a><a href="#preview">{t('landing.howItWorks')}</a></nav>
-      <LanguageSwitch /><DemoLink className="nav-demo" label={t('landing.openApp')} />
+      <LanguageSwitch /><DemoLink className="nav-demo" href="/app" label={t('landing.openApp')} />
       <button className="menu-toggle" aria-label={t('landing.menu')} aria-expanded={menuOpen} aria-haspopup="dialog" onClick={() => setMenuOpen(true)}><span className="menu-lines" /></button>
     </header>
     <main className="landing-main" id="landing-main" tabIndex={-1}>
@@ -106,11 +106,11 @@ export default function Landing() {
         <Wave className="to-yellow" layers={['pink', 'sage']} />
       </section>
       <section id="features" className="profiles-section">
-        <div className="section-wrap profiles-layout"><ProfileExamples /><div className="profile-copy reveal"><p className="section-kicker">01 / {t('landing.exampleProfiles')}</p><h2>{t('landing.profileTitle')}</h2><p>{t('landing.profileText')}</p><p className="detail-note">{t('landing.profileNote')}</p><DemoLink label={t('landing.openApp')} /><Doodle className="profile-paw" /></div></div>
+        <div className="section-wrap profiles-layout"><ProfileExamples /><div className="profile-copy reveal"><p className="section-kicker">01 / {t('landing.exampleProfiles')}</p><h2>{t('landing.profileTitle')}</h2><p>{t('landing.profileText')}</p><p className="detail-note">{t('landing.profileNote')}</p><DemoLink href="/app" label={t('landing.openApp')} /><Doodle className="profile-paw" /></div></div>
         <Wave className="to-sage" variant={1} /><div className="profile-edge-art"><Doodle kind="dog" /><Doodle kind="flower" className="edge-flower" /></div>
       </section>
       <section id="preview" className="preview-section"><div className="section-wrap preview-layout"><div className="preview-copy reveal"><p className="section-kicker">02 / {t('landing.previewKicker')}</p><h2>{t('landing.previewTitle')}</h2><p>{t('landing.previewText')}</p><p className="detail-note">{t('demoNotice')}</p><PawTrail className="preview-paw-trail" /><Doodle kind="foodBowl" className="preview-bowl decor-rock" /></div><div className="reveal"><Preview /></div></div><Wave className="to-cream" variant={2} /></section>
-      <section id="health" className="health-section section-wrap"><div className="health-copy reveal"><p className="section-kicker">03 / {t('nav.health')}</p><h2>{t('landing.healthTitle')}</h2><p>{t('landing.healthText')}</p><p className="detail-note">{t('landing.healthLimit')}</p><DemoLink label={t('landing.openApp')} /></div><HealthExample /></section>
+      <section id="health" className="health-section section-wrap"><div className="health-copy reveal"><p className="section-kicker">03 / {t('nav.health')}</p><h2>{t('landing.healthTitle')}</h2><p>{t('landing.healthText')}</p><p className="detail-note">{t('landing.healthLimit')}</p><DemoLink href="/app" label={t('landing.openApp')} /></div><HealthExample /></section>
       <section className="final-invite"><Wave className="to-pink" variant={3} layers={['yellow', 'sage']} /><div className="section-wrap final-layout reveal"><Doodle kind="flower" className="final-flower decor-spin" /><Doodle kind="daisy" className="final-daisy" /><p className="section-kicker">{t('landing.finalKicker')}</p><h2>{t('landing.finalTitle')}</h2><DemoLink label={t('landing.finalAction')} /><p>{t('landing.noAccount')}</p><div className="final-yarn decor-hover"><Doodle kind="yarn" /></div><div className="final-ball decor-hover"><Doodle kind="ball" /></div><Doodle kind="cat" className="final-cat" /><PawTrail className="final-paw-trail" /></div></section>
     </main>
     <footer className="landing-footer section-wrap"><div><Brand /><p>{t('landing.footerLine')}</p></div><div className="footer-links"><a href="#features">{t('landing.featuresLabel')}</a><a href="#preview">{t('landing.howItWorks')}</a><RouteLink href="/app">{t('landing.openApp')}</RouteLink></div><p className="footer-disclaimer">{t('landing.footerDemo')}</p><span className="footer-signature">PetDay · {t('demo')}</span></footer>

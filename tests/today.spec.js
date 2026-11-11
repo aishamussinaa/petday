@@ -1,0 +1,110 @@
+import { test, expect } from '@playwright/test';
+import { randomUUID } from 'node:crypto';
+import pg from 'pg';
+import { testDatabaseUrl } from './database-guard.mjs';
+const url=testDatabaseUrl();
+test.skip(!url,'Separate TEST_DATABASE_URL required');
+const origin='http://127.0.0.1:5183',emails=[];
+const day='2024-06-15';
+async function register(context){
+  const session=await(await context.get('/api/auth/session')).json();
+  const email=`care-${randomUUID()}@example.test`;emails.push(email);
+  const response=await context.post('/api/auth/register',{headers:{Origin:origin,'X-CSRF-Token':session.csrfToken},data:{email,password:`Fixture-${randomUUID()}`}});
+  expect(response.status()).toBe(201);
+  return {Origin:origin,'X-CSRF-Token':(await response.json()).csrfToken};
+}
+async function createPet(context,headers,name){
+  const response=await context.post('/api/pets',{headers,multipart:{data:JSON.stringify({name,species:'dog',breed:'',sex:'unknown',birthDate:null,birthApproximate:false,features:'',allergies:'',notes:'',photoAction:'keep'})}});
+  expect(response.status()).toBe(201);return(await response.json()).pet;
+}
+test.afterAll(async()=>{
+  if(!url||!emails.length)return;
+  const client=new pg.Client({connectionString:url});
+  try{await client.connect();await client.query('DELETE FROM "User" WHERE email = ANY($1::text[])',[emails]);}finally{await client.end();}
+});
+test('daily care API: privacy, dates, retry, conflicting completion and audit history',async({playwright})=>{
+  const owner=await playwright.request.newContext({baseURL:origin}),other=await playwright.request.newContext({baseURL:origin});
+  try{
+    const headers=await register(owner),otherHeaders=await register(other);
+    const pet=await createPet(owner,headers,'Первый'),second=await createPet(owner,headers,'Второй');
+    const base=`/api/pets/${pet.id}/tasks`;
+    const input={id:randomUUID(),day,title:'Ужин',category:'food',time:'19:30',notes:'Привычный корм'};
+    expect((await owner.get(`${base}?date=2024-02-30`)).status()).toBe(400);
+    expect((await owner.post(base,{data:input})).status()).toBe(403);
+    expect((await other.get(`${base}?date=${day}`)).status()).toBe(404);
+    expect((await other.post(base,{headers:otherHeaders,data:input})).status()).toBe(404);
+    for(const bad of [{title:' '},{time:'25:00'},{category:'invalid'},{notes:'x'.repeat(1001)},{day:'2023-02-29'}])expect((await owner.post(base,{headers,data:{...input,...bad}})).status()).toBe(400);
+    expect((await owner.post(base,{headers,data:input})).status()).toBe(201);
+    expect((await owner.post(base,{headers,data:input})).status()).toBe(200);
+    let result=await(await owner.get(`${base}?date=${day}`)).json();
+    expect(result.tasks).toHaveLength(1);expect(result.events).toHaveLength(1);
+    expect((await(await owner.get(`/api/pets/${second.id}/tasks?date=${day}`)).json()).tasks).toHaveLength(0);
+    expect((await(await owner.get(`${base}?date=2024-06-16`)).json()).tasks).toHaveLength(0);
+    const update={headers,data:{version:1,completed:true,timeZone:'UTC'}};
+    const concurrent=await Promise.all([owner.patch(`${base}/${input.id}/state`,update),owner.patch(`${base}/${input.id}/state`,update)]);
+    expect(concurrent.map(r=>r.status()).sort()).toEqual([200,409]);
+    result=await(await owner.get(`${base}?date=${day}`)).json();
+    expect(result.tasks[0].completedAt).not.toBeNull();expect(result.events.filter(e=>e.action==='completed')).toHaveLength(1);
+    expect((await other.patch(`${base}/${input.id}/state`,{headers:otherHeaders,data:{version:2,completed:false}})).status()).toBe(404);
+    expect((await owner.patch(`${base}/${input.id}/state`,{headers,data:{version:2,completed:false}})).status()).toBe(200);
+    expect((await owner.put(`${base}/${input.id}`,{headers,data:{...input,title:'Вечернее кормление',version:3}})).status()).toBe(200);
+    expect((await owner.delete(`${base}/${input.id}`,{headers,data:{version:3}})).status()).toBe(409);
+    expect((await owner.delete(`${base}/${input.id}`,{headers,data:{version:4}})).status()).toBe(200);
+    result=await(await owner.get(`${base}?date=${day}`)).json();
+    expect(result.tasks).toHaveLength(0);expect(result.events.map(e=>e.action)).toEqual(['deleted','edited','reopened','completed','created']);
+    const future={...input,id:randomUUID(),day:'2099-01-01'};
+    expect((await owner.post(base,{headers,data:future})).status()).toBe(201);
+    expect((await owner.patch(`${base}/${future.id}/state`,{headers,data:{version:1,completed:true,timeZone:'UTC'}})).status()).toBe(400);
+  }finally{await owner.dispose();await other.dispose();}
+});
+test('Today UI: add, language draft, network retry, reload, undo, edit, dates and history',async({page},testInfo)=>{
+  const headers=await register(page.request);
+  await createPet(page.request,headers,'Тестовый Томми');
+  await createPet(page.request,headers,'Тестовая Ума');
+  await page.setViewportSize({width:390,height:900});
+  await page.goto('/app');
+  await page.getByRole('button',{name:'Сегодня',exact:true}).click();
+  await page.getByLabel('Дата плана',{exact:true}).fill(day);
+  await expect(page.getByText('На этот день дел пока нет',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Добавить дело',exact:true}).first().click();
+  const modal=page.getByRole('dialog');
+  await modal.getByLabel('Название дела *',{exact:true}).fill('Вечерняя прогулка');
+  await modal.getByLabel('Категория',{exact:true}).selectOption('walk');
+  await modal.getByLabel('Время (необязательно)',{exact:true}).fill('18:30');
+  await modal.getByLabel('Заметка',{exact:true}).fill('Взять воду');
+  await modal.getByRole('button',{name:'EN',exact:true}).click();
+  await expect(page.locator('#task-title')).toHaveValue('Вечерняя прогулка');
+  await modal.getByRole('button',{name:'KZ',exact:true}).click();
+  await expect(page.locator('#task-notes')).toHaveValue('Взять воду');
+  await modal.getByRole('button',{name:'RU',exact:true}).click();
+  await page.route('**/tasks',route=>route.request().method()==='POST'?route.abort('failed'):route.continue());
+  await modal.getByRole('button',{name:'Сохранить',exact:true}).click();
+  await expect(modal.getByRole('alert')).toBeVisible();
+  await expect(page.locator('#task-title')).toHaveValue('Вечерняя прогулка');
+  await page.unroute('**/tasks');
+  await modal.getByRole('button',{name:'Сохранить',exact:true}).click();
+  await expect(modal).not.toBeVisible();
+  const check=page.getByRole('checkbox',{name:'Выполнение: Вечерняя прогулка',exact:true});
+  await check.click();await expect(check).toBeChecked();await expect(page.locator('.today-progress')).toContainText('Выполнено 1 из 1');
+  await page.reload();await page.getByRole('button',{name:'Сегодня',exact:true}).click();await page.getByLabel('Дата плана',{exact:true}).fill(day);
+  await expect(check).toBeChecked();
+  await check.click();await expect(check).not.toBeChecked();await expect(page.locator('.today-progress')).toContainText('Выполнено 0 из 1');
+  await page.locator('.today-task').getByRole('button',{name:'Изменить',exact:true}).click();
+  await modal.getByLabel('Название дела *',{exact:true}).fill('Прогулка в парке');
+  await modal.getByRole('button',{name:'Сохранить',exact:true}).click();
+  await expect(page.getByRole('heading',{name:'Прогулка в парке',exact:true})).toBeVisible();
+  await page.getByText('История действий за выбранный день',{exact:true}).click();
+  await expect(page.getByText('Отметка отменена: Вечерняя прогулка',{exact:true})).toBeVisible();
+  await expect(page.locator('.today-panel')).toHaveJSProperty('scrollWidth',await page.locator('.today-panel').evaluate(el=>el.clientWidth));
+  await page.screenshot({path:testInfo.outputPath('today-mobile.png'),fullPage:true});
+  await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:testInfo.outputPath('today-desktop.png'),fullPage:true});
+  await page.getByRole('button',{name:'Следующий день',exact:true}).click();await expect(page.getByText('На этот день дел пока нет',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Предыдущий день',exact:true}).click();await expect(page.getByRole('heading',{name:'Прогулка в парке',exact:true})).toBeVisible();
+  await page.locator('.real-pet-selector button').filter({hasText:'Тестовая Ума'}).click();await expect(page.locator('.today-task')).toHaveCount(0);
+  await page.locator('.real-pet-selector button').filter({hasText:'Тестовый Томми'}).click();await page.getByLabel('Дата плана',{exact:true}).fill(day);
+  await page.locator('.today-task').getByRole('button',{name:'Удалить дело',exact:true}).click();
+  await modal.getByRole('button',{name:'Удалить дело',exact:true}).click();
+  await expect(page.getByText('На этот день дел пока нет',{exact:true})).toBeVisible();
+  await page.locator('.today-history summary').click();
+  await expect(page.getByText('Удалено из плана: Прогулка в парке',{exact:true})).toBeVisible();
+});

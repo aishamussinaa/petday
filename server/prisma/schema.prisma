@@ -38,6 +38,7 @@ model Pet {
   features         String   @default("") @db.VarChar(2000)
   allergies        String   @default("") @db.VarChar(2000)
   notes            String   @default("") @db.VarChar(4000)
+  tasks            CareTask[]
   photoKey         String?  @unique @db.VarChar(64)
   version          Int      @default(1)
   createdAt        DateTime @default(now())
@@ -50,4 +51,33 @@ model RateLimit {
   count     Int
   expiresAt DateTime
   @@index([expiresAt])
+}
+
+model CareTask {
+  id String @id @db.Uuid
+  petId String @db.Uuid
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  day DateTime @db.Date
+  title String @db.VarChar(120)
+  category String @db.VarChar(12)
+  time String @default("") @db.VarChar(5)
+  notes String @default("") @db.VarChar(1000)
+  completedAt DateTime?
+  deletedAt DateTime?
+  version Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  events CareEvent[]
+  @@index([petId, day])
+}
+model CareEvent {
+  id String @id @default(uuid()) @db.Uuid
+  taskId String @db.Uuid
+  task CareTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  action String @db.VarChar(16)
+  title String @db.VarChar(120)
+  version Int
+  createdAt DateTime @default(now())
+  @@unique([taskId, version])
+  @@index([createdAt])
 }
