@@ -1,0 +1,106 @@
+/* Original decorative artwork; typography and content layout stay in pastel.css. */
+.motion-controls {
+  position: absolute;
+  top: 6px;
+  right: max(5vw, calc((100vw - 1320px) / 2));
+  z-index: 10;
+}
+.motion-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--ink);
+  border-radius: 30px;
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--ink);
+}
+.motion-toggle:disabled { cursor: default; opacity: 1; }
+.motion-track { width: 34px; height: 20px; padding: 3px; border-radius: 20px; background: var(--line); }
+.motion-track > span { display: block; width: 14px; height: 14px; border-radius: 50%; background: var(--ink); }
+.motion-toggle[aria-checked=true] .motion-track { background: var(--sage); }
+.motion-toggle[aria-checked=true] .motion-track > span { transform: translateX(14px); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* Groups sit in the collage's free areas, never on text or controls. */
+.hero-bloom { position: absolute; width: 65px; height: 65px; left: 24px; top: -18px; color: var(--ink); transform: rotate(-16deg); }
+.hero-paw { position: absolute; width: 55px; height: 55px; right: -8px; bottom: 145px; color: var(--yellow); transform: rotate(24deg); z-index: 4; }
+.profile-cat-doodle { position: absolute; width: 90px; height: 90px; bottom: -85px; left: 40%; }
+.profile-edge-art { position: absolute; width: 115px; height: 115px; bottom: 30px; right: 9%; pointer-events: none; }
+.profile-edge-art > .doodle:first-child { width: 100%; height: 100%; transform: rotate(6deg); }
+.profile-edge-art .edge-flower { position: absolute; width: 38px; height: 38px; right: -34px; top: 5px; color: var(--coral); }
+.preview-paw-trail { position: absolute; left: 0; bottom: 15px; width: 235px; height: 100px; transform: rotate(-13deg); }
+.preview-bowl { position: absolute; bottom: 2px; left: 280px; width: 105px; height: 105px; }
+.health-bloom { position: absolute; top: 180px; left: 26px; width: 70px; height: 70px; color: var(--coral); }
+.health-paw { position: absolute; bottom: 35px; right: 0; width: 75px; height: 75px; color: var(--sage); transform: rotate(18deg); }
+.final-daisy { position: absolute; right: 4%; top: 140px; width: 80px; height: 80px; color: var(--bg); transform: rotate(15deg); }
+.final-cat { position: absolute; bottom: 22px; left: 18%; width: 100px; height: 100px; }
+.final-ball { position: absolute; bottom: 70px; left: 4%; width: 65px; height: 65px; }
+.final-paw-trail { position: absolute; right: 5%; top: 12px; width: 180px; height: 80px; transform: rotate(12deg); }
+.decor-hover { cursor: default; }
+.decor-hover > .doodle { width: 100%; height: 100%; transition: transform .35s ease; }
+.paw-trail { pointer-events: none; }
+.paw-trail > span { --paw-angle: 18deg; position: absolute; left: calc(var(--step) * 23%); top: 0; width: 32px; height: 38px; transform: rotate(var(--paw-angle)); }
+.paw-trail > span:nth-child(even) { --paw-angle: -12deg; top: 28px; }
+.paw-trail > span > .doodle { width: 100%; height: 100%; }
+
+/* Each transition has its own curve and height; padding is unchanged. */
+.hero-section > .wave-0 { height: 135px; }
+.profiles-section > .wave-1 { height: 105px; }
+.preview-section > .wave-2 { height: 90px; }
+.final-invite > .wave-3 { height: 135px; top: -134px; }
+
+@keyframes decor-turn { to { transform: rotate(360deg); } }
+@keyframes decor-rock { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@keyframes paw-arrive { from { opacity: 0; transform: translateY(5px) rotate(var(--paw-angle)); } to { opacity: 1; transform: translateY(0) rotate(var(--paw-angle)); } }
+.landing[data-decor-motion=on] .decor-spin { animation: decor-turn 32s linear infinite; }
+.landing[data-decor-motion=on] .decor-spin-slow { animation-duration: 40s; animation-direction: reverse; }
+.landing[data-decor-motion=on] .decor-rock { animation: decor-rock 5s ease-in-out infinite; transform-origin: 50% 80%; }
+.landing[data-decor-motion=on] .paw-trail.is-visible > span { animation: paw-arrive .65s ease-out both; animation-delay: calc(var(--step) * .25s); }
+@media (hover: hover) {
+  .landing[data-decor-motion=on] .decor-hover:hover > .doodle { transform: rotate(18deg); }
+}
+.landing[data-decor-motion=off] .decor-hover > .doodle { transition: none; }
+.landing[data-decor-motion=off] .paper-photo,
+.landing[data-decor-motion=off] .profile-sample { transition: none; }
+.landing[data-decor-motion=off] .hero-cat:hover { transform: rotate(-10deg); }
+.landing[data-decor-motion=off] .profile-sample.uma:hover { transform: rotate(-8deg); }
+.landing[data-decor-motion=off] .profile-sample.tommy:hover,
+.landing[data-decor-motion=off] .health-photo:hover { transform: rotate(8deg); }
+
+@media (max-width: 1000px) {
+  .profile-cat-doodle { width: 70px; height: 70px; bottom: -85px; left: 52%; }
+  .profile-edge-art { right: 8%; width: 85px; height: 85px; bottom: 20px; }
+  .preview-paw-trail, .preview-bowl { display: none; }
+  .final-cat { width: 75px; height: 75px; left: 18%; bottom: 6px; }
+  .final-daisy { width: 55px; height: 55px; right: 3%; top: 45px; }
+  .final-paw-trail { display: none; }
+}
+@media (max-width: 600px) {
+  .motion-controls { right: 24px; }
+  .hero-bloom { width: 43px; height: 43px; top: -2px; left: 14px; }
+  .hero-paw { width: 36px; height: 36px; right: -4px; bottom: 126px; }
+  .profile-cat-doodle { width: 70px; height: 70px; bottom: -50px; left: auto; right: 15px; }
+  .profile-edge-art { width: 60px; height: 60px; bottom: 6px; right: auto; left: 12%; }
+  .profile-edge-art .edge-flower { width: 24px; height: 24px; right: -23px; }
+  .health-bloom { width: 40px; height: 40px; left: 8px; top: 170px; }
+  .health-paw { display: none; }
+  .final-daisy { width: 36px; height: 36px; right: 20px; top: 5px; }
+  .final-cat { display: none; }
+  .final-ball { width: 42px; height: 42px; bottom: 8px; left: 24px; }
+  .final-paw-trail { display: block; top: auto; bottom: 4px; right: 25px; width: 130px; height: 48px; }
+  .final-paw-trail > span { width: 23px; height: 25px; }
+  .final-paw-trail > span:nth-child(even) { top: 18px; }
+  .hero-section > .wave-0 { height: 90px; }
+  .profiles-section > .wave-1 { height: 70px; }
+  .preview-section > .wave-2 { height: 65px; }
+  .final-invite > .wave-3 { height: 90px; top: -89px; }
+  .landing[data-decor-motion=on] .decor-spin { animation-duration: 40s; }
+  .landing[data-decor-motion=on] .decor-rock { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing .decor-spin, .landing .decor-rock, .landing .paw-trail > span { animation: none !important; }
+  .landing .decor-hover > .doodle { transition: none; transform: none; }
+}

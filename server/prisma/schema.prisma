@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique @db.VarChar(254)
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  pets         Pet[]
+  sessions     Session[]
+}
+
+model Session {
+  tokenHash String   @id @db.Char(64)
+  csrfToken String   @db.VarChar(64)
+  userId    String?  @db.Uuid
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([expiresAt])
+}
+
+model Pet {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @db.Uuid
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String   @db.VarChar(80)
+  species          String   @db.VarChar(20)
+  breed            String   @default("") @db.VarChar(120)
+  sex              String   @default("unknown") @db.VarChar(12)
+  birthDate        DateTime? @db.Date
+  birthApproximate Boolean  @default(false)
+  features         String   @default("") @db.VarChar(2000)
+  allergies        String   @default("") @db.VarChar(2000)
+  notes            String   @default("") @db.VarChar(4000)
+  photoKey         String?  @unique @db.VarChar(64)
+  version          Int      @default(1)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  @@index([userId, createdAt])
+}
+
+model RateLimit {
+  key       String   @id @db.Char(64)
+  count     Int
+  expiresAt DateTime
+  @@index([expiresAt])
+}
