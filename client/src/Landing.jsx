@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from './components/Icon.jsx';
 import Brand from './components/Brand.jsx';
+import SkipLinks from './components/SkipLinks.jsx';
 import { Doodle, PawTrail, Wave } from './components/BrandArt.jsx';
 import useDecorMotion from './useDecorMotion.js';
 import LanguageSwitch from './components/LanguageSwitch.jsx';
+import ThemeToggle from './components/ThemeToggle.jsx';
 import Modal from './components/Modal.jsx';
 import { RouteLink, useRoute } from './routing.jsx';
 import { useDemo } from './data/DemoContext.jsx';
@@ -92,11 +94,11 @@ export default function Landing() {
     return () => { observer.disconnect(); animations.forEach(animation => animation.cancel()); };
   }, [motionEnabled]);
   return <div className="landing" data-decor-motion={motionEnabled ? 'on' : 'off'}>
-    <a className="skip-link" href="#landing-main">{t('landing.skip')}</a>
+    <SkipLinks mainId="landing-main" />
     <header className="floating-header">
       <RouteLink className="logo-link" href="/" aria-label={t('landing.home')}><Brand /></RouteLink>
       <nav className="desktop-links" aria-label={t('navigation')}><a href="#features">{t('landing.featuresLabel')}</a><a href="#preview">{t('landing.howItWorks')}</a></nav>
-      <LanguageSwitch /><DemoLink className="nav-demo" href="/app" label={t('landing.openApp')} />
+      <LanguageSwitch /><ThemeToggle /><DemoLink className="nav-demo" href="/app" label={t('landing.openApp')} />
       <button className="menu-toggle" aria-label={t('landing.menu')} aria-expanded={menuOpen} aria-haspopup="dialog" onClick={() => setMenuOpen(true)}><span className="menu-lines" /></button>
     </header>
     <main className="landing-main" id="landing-main" tabIndex={-1}>

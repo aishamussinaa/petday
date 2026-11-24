@@ -6,6 +6,9 @@ import './dashboard.css';
 import './pastel.css';
 import './decor.css';
 import './account/account.css';
+import './keyboard.css';
+import { ThemeProvider } from './theme.jsx';
+import './theme.css';
 import Account from './account/Account.jsx';
 import App from './App.jsx';
 import Landing from './Landing.jsx';
@@ -19,5 +22,5 @@ function Pages() {
 }
 
 createRoot(document.getElementById('root')).render(
-  <React.StrictMode><RouteProvider><DemoProvider><Pages /></DemoProvider></RouteProvider></React.StrictMode>
+  <React.StrictMode><ThemeProvider><RouteProvider><DemoProvider><Pages /></DemoProvider></RouteProvider></ThemeProvider></React.StrictMode>
 );

@@ -6,7 +6,9 @@ import { RouteLink } from './routing.jsx';
 import { dateOnly, dayDistance, nextBirthday, formatAge, formatDate, formatTime } from './dateUtils.js';
 import Icon from './components/Icon.jsx';
 import Brand from './components/Brand.jsx';
+import SkipLinks from './components/SkipLinks.jsx';
 import LanguageSwitch from './components/LanguageSwitch.jsx';
+import ThemeToggle from './components/ThemeToggle.jsx';
 import Modal from './components/Modal.jsx';
 import Diagnostics from './components/Diagnostics.jsx';
 
@@ -111,9 +113,9 @@ export default function App() {
     setDraft(emptyDraft); setError(''); setModal(null);
   }
   const openProfile = item => setModal({ type: 'profile', pet: item });
-  return <div className="app-layout pastel-app">
-    <aside className="sidebar"><RouteLink className="brand" href="/" aria-label={t('landing.home')}><Brand /></RouteLink><p className="sidebar-caption">{t('yourCareSpace')}</p><Navigation current={section} onChange={setSection} /><div className="sidebar-bottom"><div className="sidebar-note"><Icon name="paw" size={30} /><p>{t('sidebarNote')}</p><span>{t('sidebarSubnote')}</span></div><LanguageSwitch /><span className="demo-badge"><span />{t('demo')}</span></div></aside>
-    <div className="workspace"><header className="mobile-header"><RouteLink className="brand" href="/" aria-label={t('landing.home')}><Brand /></RouteLink><LanguageSwitch /></header>
+  return <div className="app-layout pastel-app"><SkipLinks mainId="main" />
+    <aside className="sidebar"><RouteLink className="brand" href="/" aria-label={t('landing.home')}><Brand /></RouteLink><p className="sidebar-caption">{t('yourCareSpace')}</p><Navigation current={section} onChange={setSection} /><div className="sidebar-bottom"><div className="sidebar-note"><Icon name="paw" size={30} /><p>{t('sidebarNote')}</p><span>{t('sidebarSubnote')}</span></div><LanguageSwitch /><ThemeToggle /><span className="demo-badge"><span />{t('demo')}</span></div></aside>
+    <div className="workspace"><header className="mobile-header"><RouteLink className="brand" href="/" aria-label={t('landing.home')}><Brand /></RouteLink><LanguageSwitch /><ThemeToggle /></header>
       <main id="main" tabIndex={-1}><header className="page-header"><div><p className="date-line">{formatDate(today, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}<span className="header-dot" />PetDay</p><h1>{section === 'today' ? t('dashboardHeading') : t(`nav.${section}`)}</h1><p className="page-subtitle">{t(`intro.${section}`)}</p></div><span className="header-symbol"><Icon name={section === 'today' ? 'sun' : section} size={29} /></span></header>
       <div className="demo-notice"><span className="demo-badge"><span />{t('demo')}</span><p>{t('demoNotice')}</p></div>
       <div className="pet-selector" role="group" aria-label={t('selectPet')}>{demo.pets.map(item => <button key={item.id} aria-pressed={selected === item.id} onClick={() => setSelected(item.id)}><img className={`avatar-${item.species}`} src={item.image} alt="" /><span>{item.name}<small>{t(`species.${item.species}`)}</small></span>{selected === item.id && <span className="selected-check"><Icon name="check" size={14} /></span>}</button>)}</div>

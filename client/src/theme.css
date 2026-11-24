@@ -1,0 +1,33 @@
+:root{color-scheme:light}
+.theme-toggle{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;min-width:44px;flex:0 0 44px;border:1.5px solid var(--ink);border-radius:50%;padding:0;background:var(--surface);color:var(--ink);cursor:pointer}
+.theme-toggle:hover{background:var(--yellow)}.theme-toggle svg{pointer-events:none}.sidebar-bottom .theme-toggle{justify-self:start}.modal-top .theme-toggle{margin-left:auto;margin-right:12px}
+.mobile-header{flex-wrap:wrap;gap:12px}.mobile-header .brand{margin-right:auto}
+html[data-theme=dark]{color-scheme:dark;--bg:#201c24;--surface:#2b2530;--ink:#f5eddf;--muted:#d1c2cf;--line:#635366;--yellow:#51452b;--pink:#503546;--sage:#304535;--coral:#f3a68d}
+html[data-theme=dark] .button.primary:hover,html[data-theme=dark] .editorial-button:hover{background:#e4ca8b;color:#201c24}
+html[data-theme=dark] .languages button:hover:not([aria-pressed=true]),html[data-theme=dark] .side-nav button:hover{background:var(--yellow)}
+html[data-theme=dark] .brand-mark{background:#e8ca6a;color:#362438}
+html[data-theme=dark] .hero-cat{background:var(--surface)}
+html[data-theme=dark] .paper-photo{box-shadow:3px 9px 0 #0005}
+html[data-theme=dark] .tape,html[data-theme=dark] .live-preview::before{background:#b19d7b70}
+html[data-theme=dark] .live-preview{box-shadow:7px 9px 0 #0005}
+html[data-theme=dark] .pet-photo,html[data-theme=dark] .profile-modal-photo,html[data-theme=dark] .health-photo img{background:#3a333c}
+html[data-theme=dark] .landing-footer{border-top-color:var(--line)}
+html[data-theme=dark] .progress-track{background:#617456}
+html[data-theme=dark] .is-done .category-icon{background:#3c3740}
+html[data-theme=dark] .today-task.is-done,html[data-theme=dark] .health-next{background:var(--sage)}
+html[data-theme=dark] .today-done-time,html[data-theme=dark] .dev-content .success{color:#b8d69c}
+html[data-theme=dark] .form-error,html[data-theme=dark] .dev-content .error{color:#ffaeb7}
+html[data-theme=dark] .today-remove,html[data-theme=dark] .health-remove,html[data-theme=dark] .feeding-remove{color:#ffc0c6}
+html[data-theme=dark] .button.danger{background:#772c40;color:#fff2f4;border-color:#c58296}
+html[data-theme=dark] .health-allergies,html[data-theme=dark] .feeding-allergies{background:#443728;border-left-color:#dab176}
+html[data-theme=dark] .health-tag.visit{background:var(--pink)}
+html[data-theme=dark] .health-state.is-overdue{color:#f0c489}
+html[data-theme=dark] .feeding-summary>div+div{border-top-color:#718568}
+html[data-theme=dark] .birthday-card{background:#3e352d}
+html[data-theme=dark] .birthday-party{background:#422d3c}
+html[data-theme=dark] .birthday-week .passed{background:#384336;color:#d4d9c7}
+html[data-theme=dark] .modal::backdrop{background:#09070bb8}
+html[data-theme=dark] input,html[data-theme=dark] select,html[data-theme=dark] textarea{border-color:#9c839e}
+html[data-theme=dark] :focus-visible,html[data-theme=dark] .account-nav:focus,html[data-theme=dark] .task-check input:focus-visible+span{outline-color:#e5adff;box-shadow:0 0 0 3px #201c24}
+@media(max-width:600px){.floating-header{flex-wrap:wrap;border-radius:24px}.floating-header .logo-link{order:0}.floating-header .theme-toggle{order:1;margin-left:auto}.floating-header .menu-toggle{order:2}.floating-header .languages{order:3;flex-basis:100%;justify-content:center}.floating-header .languages button{min-width:44px}}
+@media(forced-colors:active){html[data-theme=dark] :focus-visible,html[data-theme=dark] .account-nav:focus,html[data-theme=dark] .task-check input:focus-visible+span{outline-color:Highlight;box-shadow:none}}

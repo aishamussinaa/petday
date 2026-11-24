@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Brand from '../components/Brand.jsx';
+import SkipLinks from '../components/SkipLinks.jsx';
 import Icon from '../components/Icon.jsx';
 import LanguageSwitch from '../components/LanguageSwitch.jsx';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import Modal from '../components/Modal.jsx';
 import { RouteLink, useRoute } from '../routing.jsx';
 import { calendarAge, dayDistance, nextBirthday, dateOnly, formatDate } from '../dateUtils.js';
@@ -101,11 +103,11 @@ export default function Account() {
     catch (failure) { setError(failure.code); }
     finally { actionPending.current = false; setBusy(false); }
   }
-  return <div className="account-page"><header className="account-header"><RouteLink className="brand" href="/" aria-label={t('landing.home')}><Brand /></RouteLink><LanguageSwitch /><RouteLink href="/demo" className="account-demo-link">{t('landing.openDemo')}</RouteLink>{user && <button disabled={busy} className="button secondary" onClick={logout}>{t('account.logout')}</button>}</header>
-    <main className="account-main" tabIndex={-1}>
+  return <div className="account-page"><SkipLinks mainId="account-main" navigationId={user && !loading ? 'account-navigation' : undefined} /><header className="account-header"><RouteLink className="brand" href="/" aria-label={t('landing.home')}><Brand /></RouteLink><LanguageSwitch /><ThemeToggle /><RouteLink href="/demo" className="account-demo-link">{t('landing.openDemo')}</RouteLink>{user && <button disabled={busy} className="button secondary" onClick={logout}>{t('account.logout')}</button>}</header>
+    <main className="account-main" id="account-main" tabIndex={-1}>
       {loading ? <p role="status">{t('account.loading')}</p> : !user ? <Authentication onUser={loggedIn} initialError={error} retry={load} /> : <>
         <header className="account-title"><div><p className="date-line">{formatDate(today, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}</p><h1>{t('account.myPets')}</h1><p className="account-email">{user.email}</p></div><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form' }); }}><Icon name="plus" />{t('account.addPet')}</button></header>
-        <nav className="account-nav" aria-label={t('navigation')}>{['pets', 'today', 'food', 'health'].map(value => <button key={value} aria-current={section === value ? 'page' : undefined} onClick={() => setSection(value)}><Icon name={value} size={20} />{t(`nav.${value}`)}</button>)}</nav>
+        <nav className="account-nav" id="account-navigation" tabIndex={-1} aria-label={t('navigation')}>{['pets', 'today', 'food', 'health'].map(value => <button key={value} aria-current={section === value ? 'page' : undefined} onClick={() => setSection(value)}><Icon name={value} size={20} />{t(`nav.${value}`)}</button>)}</nav>
         <ErrorMessage error={error} />{error && <button className="button secondary" onClick={load}>{t('account.retry')}</button>}
         {!pets.length && !error ? <section className="account-empty"><div className="photo-placeholder"><Icon name="paw" size={66} /></div><h2>{t('account.emptyTitle')}</h2><p>{t('account.emptyText')}</p><button className="button primary" onClick={() => setModal({ type: 'form' })}>{t('account.addFirst')}</button><p className="small muted">{t('account.privateHint')}</p></section> : pets.length > 0 && <>
           <div className="real-pet-selector" role="group" aria-label={t('selectPet')}>{pets.map(item => <button key={item.id} aria-pressed={pet?.id === item.id} onClick={() => setSelected(item.id)}><Photo pet={item} /><span>{item.name}</span></button>)}</div>

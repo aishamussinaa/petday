@@ -484,5 +484,12 @@
       "MEAL_NOT_FOUND": "This record no longer exists. Reload the diary.",
       "MEAL_CHANGED": "This record has changed. Close the form and reopen the updated record."
     }
+  },
+  "keyboard": {
+    "sections": "Skip to sections"
+  },
+  "theme": {
+    "light": "Switch to light theme",
+    "dark": "Switch to dark theme"
   }
 }
