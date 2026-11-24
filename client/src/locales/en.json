@@ -436,5 +436,53 @@
       "HEALTH_NOT_FOUND": "This record no longer exists. Reload the list.",
       "HEALTH_CHANGED": "This record has changed. Close the form and reopen the updated record."
     }
+  },
+  "nutrition": {
+    "eyebrow": "Feeding diary",
+    "heading": "Food · {{name}}",
+    "intro": "Keep track of what your pet ate, feeding times and portion sizes.",
+    "add": "Add feeding",
+    "edit": "Edit feeding",
+    "title": "Food name",
+    "kind": "Food type",
+    "time": "Time",
+    "amount": "Amount",
+    "unit": "Unit",
+    "amountHint": "Not sure how much? Leave the amount empty.",
+    "notes": "Notes",
+    "date": "Diary date",
+    "entries": "Entries for the day",
+    "total": "Recorded amount",
+    "totalHint": "Total of entered portions. Grams, millilitres and pieces are counted separately.",
+    "empty": "No feedings recorded for this day",
+    "emptyText": "Add the first feeding to start the diary.",
+    "noTime": "Time not specified",
+    "unknownAmount": "Amount not specified",
+    "deleteTitle": "Delete this feeding?",
+    "deleteText": "“{{title}}” will be removed from the feeding diary.",
+    "kinds": {
+      "dry": "Dry food",
+      "wet": "Wet food",
+      "home": "Homemade food",
+      "treat": "Treat",
+      "other": "Other"
+    },
+    "units": {
+      "g": "g",
+      "ml": "ml",
+      "pcs": "pcs"
+    },
+    "errors": {
+      "MEAL_DATE": "Enter a valid date.",
+      "MEAL_FUTURE": "Record feedings for today or a past date. Plan future tasks in Today.",
+      "MEAL_TITLE": "Enter a name of up to 120 characters.",
+      "MEAL_KIND": "Choose a food type.",
+      "MEAL_UNIT": "Choose a unit.",
+      "MEAL_TIME": "Enter a time as HH:MM or leave it empty.",
+      "MEAL_AMOUNT": "Use an amount greater than zero and no more than 100,000, with up to two decimal places.",
+      "MEAL_NOTES": "Notes must not exceed 2,000 characters.",
+      "MEAL_NOT_FOUND": "This record no longer exists. Reload the diary.",
+      "MEAL_CHANGED": "This record has changed. Close the form and reopen the updated record."
+    }
   }
 }
