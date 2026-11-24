@@ -4,6 +4,7 @@ import Modal from '../components/Modal.jsx';
 import Icon from '../components/Icon.jsx';
 import { formatDate, formatTime } from '../dateUtils.js';
 import { request } from './api.js';
+import DayOverview from './DayOverview.jsx';
 
 const dateKey = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const localDay = value => {const [y,m,d]=value.split('-').map(Number);return new Date(y,m-1,d,12);};
@@ -34,7 +35,7 @@ function TaskForm({task,day,onClose,onSaved}){
     <ErrorNotice code={error}/><div className="modal-actions"><button className="button secondary" type="button" disabled={busy} onClick={onClose}>{t('cancel')}</button><button className="button primary" disabled={busy}>{t(busy?'account.saving':'account.save')}</button></div>
   </form></Modal>;
 }
-export default function Today({pet}){
+export default function Today({pet,onNavigate}){
   const {t,i18n}=useTranslation();
   const [day,setDay]=useState(dateKey),[items,setItems]=useState([]),[events,setEvents]=useState([]),[routines,setRoutines]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(null),[modal,setModal]=useState(null),[busy,setBusy]=useState(false);
   const generation=useRef(0),pending=useRef(false);
@@ -65,6 +66,7 @@ export default function Today({pet}){
     <p className="muted">{formatDate(localDay(day),i18n.language,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
     <ErrorNotice code={error}/>{error&&<button className="button secondary" onClick={load} disabled={busy}>{t('account.retry')}</button>}
     {loading?<p role="status">{t('today.loading')}</p>:<>
+      {!error && <DayOverview pet={pet} day={day} tasks={items} onNavigate={onNavigate} />}
       {items.length>0&&<div className="today-progress"><span role="status">{t('today.progress',{done:completed,total:items.length})}</span><progress aria-label={t('today.progressLabel')} max={items.length} value={completed}/></div>}
       {!items.length&&!error?<div className="today-empty"><Icon name="today" size={44}/><h3>{t('today.empty')}</h3><p>{t('today.emptyText')}</p><button className="button secondary" onClick={()=>setModal({type:'form'})}>{t('today.add')}</button></div>:<ul className="today-list">{items.map(item=><li className={`today-task ${item.completedAt?'is-done':''}`} key={item.id}>
         <div className="today-task-main">{item.targetCount===1&&<input type="checkbox" checked={Boolean(item.completedAt)} disabled={busy||day>dateKey()} aria-label={t('today.toggle',{title:item.title})} onChange={()=>mutate(item,'state')}/>}<span className="today-task-icon"><Icon name={item.category}/></span><div className="today-task-copy"><h3>{item.title}</h3><p className="small muted">{item.time?formatTime(item.time,i18n.language):t('today.anyTime')} · {t(`today.categories.${item.category}`)}{item.routineId&&` · ${t('today.fromRoutine')}`}</p>{item.notes&&<p className="today-note">{item.notes}</p>}{item.targetCount>1&&<div className="goal-counter"><span role="status">{t('today.goalProgress',{done:item.completedCount,total:item.targetCount})}</span><progress aria-label={t('today.goalLabel',{title:item.title})} max={item.targetCount} value={item.completedCount}/><div><button className="button secondary" disabled={busy||day>dateKey()||item.completedCount===0} aria-label={t('today.minusLabel',{title:item.title})} onClick={()=>mutate(item,'minus')}>{t('today.minus')}</button><button className="button primary" disabled={busy||day>dateKey()||item.completedCount>=item.targetCount} aria-label={t('today.plusLabel',{title:item.title})} onClick={()=>mutate(item,'plus')}>{t('today.plus')}</button></div></div>}{item.completedAt&&<p className="today-done-time">{t('today.doneAt',{time:timestamp(item.completedAt)})}</p>}</div></div>

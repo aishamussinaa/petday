@@ -1,181 +1,155 @@
 # PetDay
 
-**В разработке.** Главная и демонстрационный кабинет доступны локально. `/app`, `/login`, `/register` — личный кабинет и вход; требуют настроенной PostgreSQL. Регистрация, вход, профили питомцев и приватные фотографии работают с PostgreSQL и проверены интеграционными тестами. Раздел «Сегодня» сохраняет дела и историю ухода в PostgreSQL. Питание и здоровье пока не подключены.
+[Live demo](https://petday-aisha-demo.dryduet3.chatgpt.site) · [Source code](https://github.com/aishamussinaa/petday)
 
-Для запуска: `npm.cmd run dev`, затем откройте http://127.0.0.1:5173/. После выключения компьютера сервер нужно запустить снова. GitHub хранит исходники; этот репозиторий сам по себе не публикует работающий сайт.
+A pet care web application built with **React, Node.js and PostgreSQL**. Keep pet profiles, daily routines, meals, veterinary records and weight measurements in one place.
 
-Подготовка базы: `node scripts/setup-database.cjs` → `npm.cmd run db:migrate` → `npm.cmd run db:check`. Пароль вводится только локально. Для восстановления забытого пароля см. `docs/progress.md`.
+**Portfolio project · actively developed.** The public demo runs without an account. The full application stores each user's data in a private local account.
 
+![Today dashboard](docs/screenshots/today-desktop.png)
 
-Приложение для ежедневного ухода за питомцами. Учебный проект для личного использования и портфолио: JavaScript, React + Vite, Express 5, CSS, i18next + react-i18next. Зависимости организованы через npm workspaces, версии зафиксированы в package-lock.json.
+## Features
 
-## Возможности и ограничения
+- **Pet profiles:** photos with crop and zoom controls, species, breed, birthday, allergies and notes.
+- **Daily care:** one-off tasks, daily or weekly routines, and goals such as three walks a day. Track completion, undo a step and review activity history.
+- **Today overview:** completed care steps, recorded meals, and health reminders with direct links to the relevant sections.
+- **In-app reminders:** unfinished tasks whose scheduled time has arrived, health plans and follow-up dates within seven days, and overdue dates that need checking.
+- **Birthdays:** a seven-day countdown and an automatic cake celebration on the pet's birthday, respecting reduced-motion preferences.
+- **Health journal:** vaccinations and veterinary visits, planned/completed status, clinic, vet, notes and optional follow-up dates.
+- **Weight history:** dated measurements in kilograms, a trend chart, an accessible text list, editing and deletion.
+- **Feeding diary:** food type, time, optional portion size and notes. Totals are calculated separately for grams, millilitres and pieces.
+- **PDF export:** download a pet's profile, allergies, veterinary records and weight history. Cyrillic and Kazakh characters are supported through an embedded local font.
+- **Light and dark themes:** a round moon/sun toggle, system preference detection and a saved preference shared across tabs.
+- **Keyboard access:** Tab/Shift+Tab navigation, visible focus, skip links, Enter activation, and modal focus management with Escape support.
+- **Three languages:** Russian, Kazakh and English; switching languages preserves form drafts.
+- **Installable web app:** home-screen icons, a standalone window where supported, and a clear offline message with a retry action.
 
-- `/` — главная с большим фотоколлажем, примерами профилей, работающим расписанием и примером записи о визите.
-- `/demo` — демо-кабинет: выбор питомца, независимый прогресс, выполнение и отмена дел, добавление дела с проверкой названия, профили, журнал кормлений и визиты.
-- RU / KZ / EN: KZ соответствует `kk`. Русский — по умолчанию и запасной. Язык сохраняется в localStorage, `html lang` обновляется, даты и числа форматируются по языку.
-- Переключение языка сохраняет выбранного питомца, отметки и черновик формы. Имена и введённые названия не переводятся.
-- Маршруты открываются напрямую и после обновления. Кнопки браузера «Назад» / «Вперёд» работают. Расписание главной и демо-кабинета использует общее состояние.
+## Stack
 
-Ума и Томми показаны как **примеры профилей**. Имена и сведения «кошка» / «чёрный той-пудель» даны владельцем проекта; фотографии не изображают его настоящих животных. Даты рождения, возраст, диагнозы и аллергии не выдуманы: неизвестные даты отображаются как «Нет данных». Расчёт возраста и ближайшего дня рождения сохранён для будущих заполненных профилей; для 29 февраля в невисокосный год используется 28 февраля.
+| Layer | Technology |
+| --- | --- |
+| Frontend | React, Vite, JavaScript, CSS |
+| Localization | i18next, react-i18next |
+| API | Express 5, Node.js 24 |
+| Database | PostgreSQL, Prisma |
+| Authentication | Argon2id password hashing, database-backed sessions, HttpOnly cookies |
+| Photos | Multer and Sharp; private owner-checked image routes |
+| PDF | PDF-LIB, fontkit, embedded Noto Sans |
+| Testing | Playwright with Chrome, Node.js test runner |
 
-Дела, кормления и визиты — демонстрационные записи. Даты визитов вычисляются относительно дня открытия приложения, время отображается в часовом поясе браузера. Изменения в демо хранятся в памяти React и **сбрасываются после обновления страницы**. Это ограничение не относится к профилям личного кабинета. В localStorage записываются только настройки интерфейса: язык и включение декоративной анимации.
+Dependencies use npm workspaces and pinned versions in `package-lock.json`.
 
-В личном кабинете доступны регистрация, вход/выход, создание, редактирование и удаление питомцев, фото с кадрированием, возраст и ближайший день рождения. Профили сохраняются в PostgreSQL; фото — в server/uploads/pets и доступны только владельцу. В разделе здоровья можно просматривать примеры записей; добавление прививок и рекомендаций после приёма ещё не реализовано. Приложение не генерирует назначения, дозировки или рекомендации по рациону.
+## Run locally
 
-`GET /api/health` возвращает `{ "status": "ok" }`. Сохранены обработка неизвестных API-маршрутов, централизованная обработка ошибок и Vite proxy. Диагностика соединения и тестовое поле находятся в сворачиваемой панели кабинета только в dev-режиме.
+Requirements: **Node.js 24**, npm, and PostgreSQL for accounts. The landing page and demo work without a database. Browser tests use an installed Google Chrome.
 
-## Запуск
-
-Нужны Node.js 24 LTS и npm. Из `C:\petday` в PowerShell:
+From the repository root in Windows PowerShell:
 
 ```powershell
 npm.cmd ci
+node scripts/setup-database.cjs
+npm.cmd run db:generate
+npm.cmd run db:migrate
+npm.cmd run db:check
 npm.cmd run dev
 ```
 
-- Главная: http://127.0.0.1:5173/
-- Кабинет: http://127.0.0.1:5173/app
-- API: http://127.0.0.1:3001/api/health
+The setup script prompts for local PostgreSQL credentials and writes `.env`. It creates the `petday` and `petday_test` databases when needed without deleting existing data. Alternatively, use `.env.example` as a template and configure your own database URLs.
 
-Остановка обеих частей — Ctrl+C в терминале запуска. Глобальные установки и изменение политики PowerShell не нужны.
+| Address | Purpose |
+| --- | --- |
+| `http://127.0.0.1:5173/` | Landing page |
+| `http://127.0.0.1:5173/demo` | Interactive demo |
+| `http://127.0.0.1:5173/app` | Personal account |
+| `http://127.0.0.1:3001/api/health` | API health check |
 
-При ошибке установки `UNABLE_TO_VERIFY_LEAF_SIGNATURE` в этой среде помогло использование системных доверенных сертификатов Windows только для текущего терминала:
+Stop the development servers with **Ctrl+C**. After restarting your computer, run `npm.cmd run dev` again. GitHub stores the source code; it does not run the local application.
+
+On macOS or Linux, use `npm` instead of `npm.cmd` for development/build commands. The current Playwright web-server command is configured for Windows.
+
+### Environment
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection for the application |
+| `TEST_DATABASE_URL` | Separate test database; its name must end in `_test` |
+| `APP_ORIGIN` | Allowed frontend origins, comma-separated |
+| `PORT` | API port, defaults to `3001` |
+| `UPLOAD_DIR` | Optional private photo storage directory |
+| `TRUST_PROXY` | Set to `1` only behind a trusted reverse proxy |
+
+For a production account deployment, configure HTTPS, secure cookies, persistent PostgreSQL and private upload storage. The current API binds to loopback and needs an appropriate reverse proxy. The published portfolio build is a static demo, not the hosted account backend.
+
+## Build and test
 
 ```powershell
-$env:NODE_USE_SYSTEM_CA = '1'
-npm.cmd ci
+npm.cmd run build
+npm.cmd run build:demo
+npm.cmd test
+npm.cmd run test:unit
 ```
 
-Это не отключает HTTPS-проверку. Для запуска установленного проекта переменная не нужна.
+- `build` creates the full frontend in `client/dist`; it does not start the API.
+- `build:demo` creates a standalone static demo in `client/dist-demo`, with registration/account routes mapped to the demo. No database or API is required.
+- `test` runs the Playwright suite against separate servers on ports `3011` and `5183` and the guarded test database.
+- `test:unit` checks validation, birthday calculations and PostgreSQL recovery behavior.
 
-| Команда из корня | Действие |
-| --- | --- |
-| `npm.cmd run dev` | Запустить сервер и интерфейс вместе |
-| `npm.cmd run build` | Собрать интерфейс в client/dist |
-| `npm.cmd exec playwright test` | Проверки API и интерфейса в установленном Chrome |
-| `npm.cmd run dev --workspace server` | Запустить только API |
-| `npm.cmd run dev --workspace client` | Запустить только интерфейс |
+Coverage includes data ownership, CSRF, validation, safe retries, concurrent edits, persistence, photo handling, daily goals, health and meal records, weight history, PDF download, themes, keyboard navigation, localization, responsive layouts and the offline fallback. Screenshots are written to the ignored `test-results/` directory. PDF output is also visually checked after rendering.
 
-Для демо база необязательна. Для аккаунтов настройте `.env` через `node scripts/setup-database.cjs`, примените `npm.cmd run db:migrate` и проверьте `npm.cmd run db:check`. При необходимости задайте `PORT` в `.env`. Сервер и Vite proxy используют этот порт; после изменения перезапустите обе части. Занятые порты вызывают ошибку запуска; посторонние процессы останавливать не нужно.
+## Demo and data behavior
 
-Сборка не запускает сервер и не публикует проект. Vite proxy предназначен для разработки. Для будущего статического хостинга потребуется SPA fallback на index.html для `/app`.
+The demo uses example pets, care tasks, veterinary events and explicitly fictional weight measurements. Changes remain in memory and reset after refreshing the page. They do not touch a real account or the database. Unknown birthdays remain unknown rather than being invented.
 
-## Структура
+The full application keeps profiles, tasks, meals, health records and weight measurements in PostgreSQL. Photos are stored separately in `server/uploads/pets` by default and are served only after an ownership check. Back up the database and uploaded photos together.
 
-- `client/src/main.jsx` — точка входа React.
-- `client/src/Landing.jsx` — главная и интерактивный фрагмент расписания.
-- `client/src/App.jsx` — кабинет, общие компоненты Schedule и Progress.
-- `client/src/routing.jsx` — маршруты и история браузера.
-- `client/src/data/` — демонстрационные данные и общее состояние задач.
-- `client/src/components/` — диалог, языки, диагностика, SVG-иконки и декор.
-- `client/src/locales/` — переводы ru / kk / en.
-- `client/src/dashboard.css` — общие переменные, элементы управления и кабинет.
-- `client/src/pastel.css` — композиция главной и адаптивность.
-- `client/src/decor.css` — размещение SVG-декора, слои волн и анимации.
-- `client/src/useDecorMotion.js` — настройка движения и реакция на prefers-reduced-motion.
-- `client/src/fonts.css` — локальные шрифты.
-- `server/` — Express API; `tests/` — проверки.
+Writes require a valid session and CSRF token. Versions prevent silent overwrites from concurrent edits; stable client IDs make supported create operations safe to retry. Tasks and journal entries use soft deletion, while deleting a pet removes its related records.
 
-## Дизайн и шрифты
+Recurring tasks are generated when the selected date is opened. Stopping a routine preserves today's tasks and past history. Future tasks cannot be marked complete ahead of their date. Dates follow the browser's local calendar; February 29 birthdays use February 28 in non-leap years.
 
-Палитра: сливочный `#FFF8EC`, жёлтый `#FFE36D`, розовый `#F29BC1`, фисташковый `#CEE5B2`, сливовый `#362438`, коралловый `#F47758`. Общие значения вынесены в CSS-переменные; конфликтующие старые стили заменены. Контраст основного текста с цветными секциями не ниже 6,98:1; вспомогательный текст также проверен на основных фонах.
+Health follow-up dates produce in-app reminders, not new medical records. Plans are not automatically marked completed. Feeding totals describe recorded portions, not recommended intake. Weight charts show measurements without judging a healthy range. PDF reports summarize owner-entered information and do not replace a veterinary passport.
 
-**Golos Text** — плотные заголовки и логотип, **Noto Sans** — описания, формы и записи. Основной текст 18–20 px на компьютере и 17–18 px на телефоне, подписи от 14 px. Шрифты локальные, запросов к Google Fonts нет:
+## Installation and offline behavior
 
-- [Golos Text](https://github.com/googlefonts/golos-text), Alexandra Korolkova и Vitaly Kuzmin: `client/public/fonts/golos-text.ttf`, SIL OFL в `GolosText-OFL.txt`.
-- [Noto Sans](https://github.com/google/fonts/tree/main/ofl/notosans): WOFF2-подмножества latin / latin-ext / cyrillic / cyrillic-ext, SIL OFL в `NotoSans-OFL.txt`. TTF в tests/fixtures нужен для проверки символов и не входит в сборку.
+Use **Install PetDay** to open the browser's install prompt where available. Otherwise, the site provides instructions for Safari, Chrome and Edge. Installation on a public domain requires HTTPS, and available controls depend on the browser.
 
-Автотест проверяет русский алфавит и казахские Ә Ғ Қ Ң Ө Ұ Ү Һ І в обеих гарнитурах. Запасные варианты — Noto Sans / Segoe UI / Arial. Для письменных казахских дат используются названия месяцев и дней из kk.json: установленный Chrome объявляет поддержку kk, но возвращает служебные сокращения вроде M10 и Thu. Русские и английские даты форматируются через Intl.DateTimeFormat.
+The service worker caches only a public offline message. It does **not** cache API responses, private photos or account data. An internet connection is required to load and save records. Background push notifications and full offline editing are not implemented.
 
-Прокрутка нативная. Цветы вращаются за 32–40 секунд, миски слегка покачиваются, лапки появляются последовательно при прокрутке, мяч и клубок поворачиваются при наведении. Часть декора статична. Тексты, кнопки, записка с расписанием и формы неподвижны. На телефоне вращение медленнее, покачивание мисок отключено, декоративных деталей меньше.
-
-Переключатель «Анимация декора» расположен над первым экраном, доступен с клавиатуры и сохраняет настройку `petday.decorMotion` в localStorage. Системная настройка `prefers-reduced-motion` имеет приоритет: переключатель показывает выключенное состояние, декоративные эффекты и плавная прокрутка отключаются. Изменение системной настройки учитывается без перезагрузки. Без анимаций содержимое остаётся видимым. Настройка движения не влияет на язык, выбранного питомца и задачи.
-
-Элементы имеют заметный фокус, диалоги поддерживают Escape, удержание и возврат фокуса. Нижняя навигация кабинета имеет отступ под контент. Декоративные SVG скрыты от скринридеров. Четыре перехода имеют разные изгибы и высоты; у первого и последнего — три цветных слоя. Дополнительных отступов для волн нет.
-
-## Изображения и лицензии
-
-Изображения хранятся локально. Стоковый снимок чёрного пуделя используется по [Unsplash License](https://unsplash.com/license), включая личные и коммерческие проекты. Рыжий пудель на главной — **авторская работа владельца проекта**, предоставленная им во вложении и использованная по его запросу. Для неё не заявляется лицензия Unsplash или Pexels. При работе сайта нет запросов к внешним фотосервисам.
-
-| Файл в client/public/images | Автор и источник | Подготовка |
-| --- | --- | --- |
-| `poodle.jpg` | Renate Dreyer, [Black poodle sitting on a sidewalk](https://unsplash.com/photos/a-black-poodle-sitting-on-a-sidewalk-next-to-a-chair-kfxuGrYo0Bs), [оригинал](https://images.unsplash.com/photo-1684138597964-15e0719309bf) | JPEG 1400 × 2100, качество 85, около 260 КиБ |
-| `uma.jpg` | [Источник, указанный пользователем](https://img-fotki.yandex.ru/get/3908/53643727.a/0_117993_1b5fd876_L.jpg). Авторство и лицензия пока не установлены; фото не заявляется собственным или свободно лицензированным | Исходный JPEG 500 × 333, около 33 КиБ; сохранён без перерисовки и изменения пикселей |
-| `attached-poodle-cutout.png` | Авторская работа владельца проекта, прикреплённое изображение рыжего пуделя | Встроенный imagegen, background-extraction. PNG с прозрачностью, 1165 × 1350, около 1,77 МиБ |
-
-Размер и качество JPEG чёрного пуделя заданы через CDN источника при скачивании. Фото кошки используется во всех демонстрационных карточках и аватарках; кадрирование задаётся только CSS, отдельно для крупных изображений и аватарок. На первом экране рамка имеет равномерные белые поля 16 px на компьютере и 11 px на телефоне, без подписей внутри. Общее пояснение о демонстрационных изображениях сохранено. PNG оставлен ради качества шерсти на цветной подложке. Изображения имеют заданные размеры; на телефоне проверены мордочка, уши и лапы. Рыжий пудель служит только декором главной и не подписан именем Томми. Томми остаётся чёрным той-пуделем, его профиль и стоковое фото не менялись.
-
-По последнему уточнению используется именно пользовательское вложение. [Предложенная ранее фотография Pexels](https://www.pexels.com/photo/adorable-brown-toy-poodle-sitting-indoors-29286576/) изображает другую собаку и в приложении не используется. Исходный запрос к инструменту ограничен удалением фона с сохранением внешности, позы, пропорций и существующих частей тела; отдельная собака для сайта не запрашивалась. Imagegen выполняет обработку изображения, а не гарантированное побайтовое сохранение всех пикселей.
-
-Точный запрос обработки `attached-poodle-cutout.png` (встроенный инструмент, без CLI):
+## Project structure
 
 ```text
-Use case: background-extraction, strict photo edit. EDIT TARGET: the USER-ATTACHED photograph of the apricot toy poodle seated on a beige carpet in a pale beige room, with head tilted, CLOSED mouth, long hanging curly ears, front paws visible, and a wood/cane cabinet at the right. It is the user image, NOT the recently downloaded Pexels dog with open mouth and tongue, NOT that generated cutout. Use only the user's closed-mouth tilted-head puppy photograph as input subject. ONLY remove its room, cabinet and carpet background to true alpha transparency, preserving the photographed dog pixels and fur edge as accurately as possible. Do not redraw or reinterpret the dog. Keep the same face, closed mouth, dark eyes, head tilt, hanging ears, exact proportions, curl texture, color, lighting, pose and visible paws. No beautification, no facial changes, no replacement dog, no new anatomy, no invented missing body parts. Keep the complete existing visible animal with a small transparent margin. Transparent PNG, no shadow, no text. This is background removal from the specific attached photo, not image generation.
+client/
+  public/             Fonts, images, install icons, manifest and offline page
+  src/
+    account/          Personal account, daily care, health, food, weight and PDF
+    components/       Shared controls, dialogs, icons and installation UI
+    data/             In-memory demonstration data
+    locales/          Russian, Kazakh and English translations
+    Landing.jsx       Landing page
+    App.jsx           Demo dashboard
+    main.jsx          Application entry point
+server/
+  prisma/             Schema and additive migrations
+  src/                Express routes, validation, sessions and photo storage
+scripts/              Database setup, maintenance and public demo build
+tests/                Browser, API and unit tests
+docs/                 Screenshots and development notes
 ```
 
-`BrandArt.jsx` содержит оригинальные SVG PetDay: контурные и заполненные лапки, три формы цветков, фигурки кота и собаки, две миски, мяч, клубок, дорожки, звезду и четыре формы волн с поддержкой слоёв. Они нарисованы в коде для проекта; рисунки с водяными знаками не копировались. `Icon.jsx` — интерфейсные иконки. Референсы [«Собрано в саду»](https://sobranovsadu.ru/) и [«Слышь, пёс»](https://slyshpes.ru/) просмотрены в браузере с прокруткой; использованы принципы масштаба, волн и бумажных фотоколлажей. Логотипы, тексты, фотографии и фирменные иллюстрации референсов не копировались.
+## Screenshots
 
-## Проверки
+<img src="docs/screenshots/today-mobile.png" alt="PetDay mobile dashboard" width="320">
 
-Playwright запускает отдельные экземпляры на портах 3011 и 5183 и завершает только их. Просмотр на 3001 / 5173 может работать одновременно. Нужен установленный Google Chrome.
+## Assets and attribution
 
-Проверяются API напрямую и через proxy, календарная логика, оба маршрута, меню, выбор питомца, независимый прогресс, выполнение и отмена, добавление дела, ошибки формы, сохранение черновика при смене языка, кормления, здоровье, неизвестная дата рождения, диалоги и возврат фокуса, диагностика при недоступном API, reduced motion. На ширинах 390, 768 и 1440 px проверяются три языка, отсутствие горизонтального переполнения и подписей мельче 14 px. Скриншоты сохраняются в `test-results/`.
+The interface uses local **Golos Text** and **Noto Sans** fonts under the SIL Open Font License. Their license files are included in `client/public/fonts`. The PDF font is Noto Sans; it is loaded only when exporting a report.
 
-Дополнительно просматриваются реальные скриншоты первого экрана, секций и кабинета: переносы, кадрирование, слои и доступность действий. Временные материалы находятся в игнорируемой `.design-review/`.
+| Asset | Source |
+| --- | --- |
+| `poodle.jpg` | [Renate Dreyer on Unsplash](https://unsplash.com/photos/a-black-poodle-sitting-on-a-sidewalk-next-to-a-chair-kfxuGrYo0Bs), used under the [Unsplash License](https://unsplash.com/license) |
+| `uma.jpg` | [User-supplied source](https://img-fotki.yandex.ru/get/3908/53643727.a/0_117993_1b5fd876_L.jpg); authorship and license have not been established, so no open license is claimed |
+| `attached-poodle-cutout.png` | Project owner's supplied photograph, prepared as a transparent cutout |
+| UI icons, decorative shapes and install icons | SVG artwork drawn in code for this project |
 
-`tests/decor.spec.js` проверяет управление движением с клавиатуры, сохранение настройки, приоритет системного reduced motion, реальное изменение transform у декора, неподвижность заголовка и кнопки, последовательность лапок и отключение hover-эффектов. Проверяется также, что смена декоративного пуделя не меняет фото Томми в кабинете.
+Demo photographs do not establish the appearance or medical history of a real user's pet. Images and fonts are served locally; normal browsing makes no requests to external photo or font services.
 
-Секреты, настоящие .env, загрузки, зависимости, сборки, логи и результаты проверок исключены из Git; `.env.example` разрешён. Коммит, push и публикация на этом этапе не выполняются.
-
-## Аккаунты и сохранение данных
-
-Пароли аккаунтов хешируются Argon2id. Сессии живут в БД до 7 дней; браузер получает HttpOnly cookie. Изменения требуют CSRF-токен и разрешённый Origin. Для production обязательны HTTPS и APP_ORIGIN. Профили и фото проверяются на принадлежность текущему пользователю; версия профиля предотвращает перезапись одновременных изменений.
-
-Для резервной копии сохраняйте PostgreSQL и server/uploads/pets вместе. Не публикуйте .env, пароли и личные фото в Git. Настройка TEST_DATABASE_URL указывает на отдельную базу с именем, оканчивающимся на _test; тесты не используют DATABASE_URL для своих данных. Запуск: npm.cmd test; отдельные тесты валидации и восстановления: npm.cmd run test:unit.
-
-Интеграционные проверки покрывают регистрацию/повторный вход, сохранение фото, запрет доступа второго аккаунта, CSRF, будущую дату, повреждённое фото, конфликт одновременных правок, сохранение черновика при сетевой ошибке, три языка, обновление страницы и удаление последнего питомца. В тестах создаются отдельные временные аккаунты.
-
-## Ежедневные дела
-
-В личном кабинете выберите питомца и вкладку «Сегодня». Можно выбрать календарную дату, добавить дело (кормление, вода, прогулка, уход или другое), время и заметку, изменить или удалить его, отметить выполнение и отменить отметку. Будущие дела можно планировать, но нельзя выполнить раньше выбранной даты. Поддерживаются повторения каждый день или в выбранные дни недели, а также цели от 1 до 20 выполнений в день. Уведомления пока не реализованы.
-
-Миграция 20261111010000_daily_care добавляет CareTask и CareEvent без изменения существующих профилей. Дата плана хранится отдельно от времени выполнения; фактическое время задаёт сервер. История показывает последние 100 действий для дел выбранной даты, включая отмены и удаления. Удаление дела скрывает его из списка, сохраняя историю; удаление самого питомца удаляет связанные дела и историю. Проверка владельца обязательна для всех маршрутов. Версии предотвращают конфликт одновременных правок, а стабильный ID защищает от создания дубликата при повторной отправке формы.
-
-Проверки tests/today.spec.js используют только petday_test: валидация, доступ другого пользователя, разделение питомцев/дат, повтор создания, конкурентные отметки, история, смена языков, ошибка сети, перезагрузка, отмена, редактирование и удаление.
-
-## Повторения и дневные цели
-
-В форме «Добавить дело» задайте количество выполнений и вариант повторения: один раз, каждый день или выбранные дни недели. Например: «Погулять с Томми», категория «Прогулка», количество 3, повторять каждый день. Кнопки +1 и отмены одной отметки сохраняют отдельный результат на каждой дате; старые одноразовые дела по-прежнему имеют обычную галочку.
-
-Расписание создаёт экземпляр дела при открытии соответствующей даты. Это работает после перерыва в использовании и не требует фонового сервера в полночь. В открытой вкладке дата «Сегодня» обновляется при смене дня; просмотр прошлой даты не переключается. Уникальная пара расписание/дата и блокировка на питомце предотвращают дубликаты при параллельных запросах. Удалённое дело одной даты не создаётся заново. Правка экземпляра влияет только на эту дату.
-
-В блоке «Повторяющиеся дела» можно остановить расписание с завтрашнего дня: сегодняшние дела и прошлая история сохраняются; будущие невыполненные экземпляры скрываются. Для смены самого расписания остановите прежнее и создайте новое с нужной даты (обычно с завтрашнего дня). Действующих расписаний для одного питомца может быть несколько. Пуш-уведомления и напоминания вне открытого сайта пока отсутствуют.
-
-Миграция 20261112000000_recurring_goals добавляет CareRoutine, completedCount/targetCount и снимки счётчиков в событиях. Существующие выполненные дела мигрируются в 1/1; данные не удаляются. tests/recurring.spec.js проверяет дни недели, повтор запросов, параллельные нажатия, границы счётчика, историю, сохранение, независимость дней и остановку ранее просмотренных будущих экземпляров.
-
-## День рождения питомца
-
-За 7 дней до дня рождения выбранного питомца в кабинете появляется карточка с ежедневным отсчётом. В день рождения — тортик со свечкой, поздравление и короткая анимация конфетти. Автоматическая анимация показывается один раз за этот день в данном браузере; её можно повторить кнопкой. Настройка движения и системный reduced motion учитываются.
-
-Поздравление автоматически появляется на главном экране кабинета в день рождения питомца. Без даты отсчёт не показывается; для примерной даты есть пояснение. Для 29 февраля в невисокосном году используется 28 февраля. Дни считаются по календарю устройства, открытая карточка обновляется в течение 30 секунд после полуночи и при возврате во вкладку. Это поздравление внутри сайта, не пуш-уведомление при закрытом приложении.
-
-## Здоровье питомца
-
-Во вкладке «Здоровье» сохраняются прививки и визиты к ветеринару: название/причина, дата, статус «Запланировано» или «Выполнено», клиника, врач, заметки и необязательная следующая дата, указанная пользователем. Планы сортируются от ближайшей даты, история — от новых записей к старым. Прошедший план не становится выполненным автоматически: после визита отредактируйте запись и смените статус. Для будущей даты допустим только план. Следующая дата должна быть позже даты записи; это справочное поле, оно не создаёт отдельную запись или уведомление.
-
-Есть фильтры по типу, редактирование и удаление с подтверждением. Аллергии берутся из профиля питомца. Записи доступны только владельцу и сохраняются в PostgreSQL; повтор запроса создания не делает дубликат, версии защищают от одновременной перезаписи. Удаление записи скрывает её; удаление питомца удаляет связанные записи. Миграция 20261112010000_pet_health добавляет таблицу HealthRecord без изменения существующих данных.
-
-## Дневник питания
-
-В личном кабинете вкладка «Питание» сохраняет кормления выбранного питомца по датам: название еды, тип (сухой/влажный корм, домашняя еда, лакомство, другое), время, необязательное количество в г/мл/шт. и заметки. Можно записывать сегодня и прошлые дни, редактировать запись и удалять с подтверждением. Без количества запись сохраняется и не включается в сумму; разные единицы суммируются отдельно. Итог отражает введённые порции, не рекомендуемую норму питания.
-
-Планы кормлений и повторяющиеся задачи остаются в «Сегодня». Дневник с ними автоматически не связан. Аллергии показаны из профиля. Дата дневника обновляется в полночь, если открыт текущий день; прошлый день остаётся выбранным. Все записи приватны, проверяются CSRF и версия, повтор создания не даёт дубликат. Миграция 20261124000000_meal_diary добавляет Meal без удаления существующих данных.
-
-## Управление с клавиатуры
-
-Tab выбирает следующую кнопку, ссылку или поле; Shift+Tab — предыдущую. Enter открывает ссылки, переключает разделы и нажимает кнопки; пробел переключает флажки. Выбранный элемент выделяется контрастной рамкой со светлой обводкой. В начале страницы доступны ссылки перехода к содержимому, а в кабинете — сразу к разделам. Обычный текст не добавляется в порядок Tab. В диалогах Tab остаётся внутри окна, Escape закрывает его и возвращает фокус к открывшей кнопке; если она удалена, фокус возвращается к содержимому.
-
-## Светлая и тёмная темы
-
-Круглая кнопка в шапке: луна включает тёмную тему, солнце — светлую. Переключатель есть на главной, в кабинете, демо и диалогах; работает через Tab и Enter. Выбор сохраняется в localStorage (petday.theme) и синхронизируется между вкладками. До ручного выбора учитывается тема устройства и её изменения. Если хранилище недоступно, переключение работает в текущей вкладке. Тема применяется до загрузки React, включая фон страницы и цвет браузерной панели.
+Technical references: [PDF-LIB font embedding](https://pdf-lib.js.org/docs/api/classes/pdfdocument#embedfont) and [PWA manifests](https://web.dev/learn/pwa/web-app-manifest).

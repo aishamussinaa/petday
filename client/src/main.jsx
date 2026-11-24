@@ -11,16 +11,17 @@ import { ThemeProvider } from './theme.jsx';
 import './theme.css';
 import Account from './account/Account.jsx';
 import App from './App.jsx';
+import InstallApp from './components/InstallApp.jsx';
 import Landing from './Landing.jsx';
 import { RouteProvider, useRoute } from './routing.jsx';
 import { DemoProvider } from './data/DemoContext.jsx';
 
 function Pages() {
   const { path } = useRoute();
-  if (/^\/(app|login|register)\/?$/.test(path)) return <Account />;
+  if (/^\/(app|login|register)\/?$/.test(path)) return import.meta.env.VITE_DEMO_ONLY === 'true' ? <App /> : <Account />;
   return /^\/demo\/?$/.test(path) ? <App /> : <Landing />;
 }
 
 createRoot(document.getElementById('root')).render(
-  <React.StrictMode><ThemeProvider><RouteProvider><DemoProvider><Pages /></DemoProvider></RouteProvider></ThemeProvider></React.StrictMode>
+  <React.StrictMode><ThemeProvider><RouteProvider><DemoProvider><Pages /><InstallApp /></DemoProvider></RouteProvider></ThemeProvider></React.StrictMode>
 );

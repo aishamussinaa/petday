@@ -42,6 +42,7 @@ model Pet {
   routines         CareRoutine[]
   healthRecords    HealthRecord[]
   meals            Meal[]
+  weights          WeightRecord[]
   photoKey         String?  @unique @db.VarChar(64)
   version          Int      @default(1)
   createdAt        DateTime @default(now())
@@ -144,4 +145,18 @@ model Meal {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@index([petId, day])
+}
+
+model WeightRecord {
+  id String @id @db.Uuid
+  petId String @db.Uuid
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  date DateTime @db.Date
+  kg Decimal @db.Decimal(7, 3)
+  notes String @default("") @db.VarChar(1000)
+  version Int @default(1)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([petId, date])
 }

@@ -81,6 +81,7 @@ export default function PetForm({ pet, onClose, onSaved }) {
         <input ref={fileInput} id="pet-photo" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-hint error-photo" onChange={choosePhoto} />
         <label className="sr-only" htmlFor="pet-photo">{t('account.choosePhoto')}</label>
         {preview && <div className="crop-controls">{['zoom', 'x', 'y'].map(key => <label key={key} htmlFor={`crop-${key}`}>{t(`account.crop.${key}`)}<input id={`crop-${key}`} type="range" min={key === 'zoom' ? 1 : 0} max={key === 'zoom' ? 3 : 1} step="0.01" value={crop[key]} onChange={e => setCrop({ ...crop, [key]: Number(e.target.value) })} /></label>)}</div>}
+        {preview && <button className="button secondary crop-reset" type="button" onClick={() => setCrop({ x: .5, y: .5, zoom: 1 })}>{t('care.resetCrop')}</button>}
         {source && <button className="button secondary" type="button" onClick={() => { selection.current++; setFile(null); setPhotoAction('remove'); }}>{t('account.removePhoto')}</button>}
         {errorFor('photo')}
       </fieldset>

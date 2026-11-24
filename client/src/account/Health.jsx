@@ -5,6 +5,8 @@ import Icon from '../components/Icon.jsx';
 import { formatDate } from '../dateUtils.js';
 import { request } from './api.js';
 import './health.css';
+import WeightHistory from './WeightHistory.jsx';
+import ReportButton from './ReportButton.jsx';
 
 const dayKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 const localDay = value => { const [year, month, day] = value.split('-').map(Number); return new Date(year, month - 1, day, 12); };
@@ -72,6 +74,7 @@ export default function Health({ pet, today }) {
   const showDate = value => formatDate(localDay(value), i18n.language, { day: 'numeric', month: 'long', year: 'numeric' });
   return <section className="health-panel" aria-label={t('medical.heading', { name: pet.name })}>
     <header className="health-heading"><div><p className="eyebrow">{t('medical.eyebrow')}</p><h2>{t('medical.heading', { name: pet.name })}</h2><p className="muted">{t('medical.intro')}</p></div><div className="health-add"><button className="button primary" onClick={() => setModal({ type: 'form', kind: 'vaccine' })}><Icon name="plus" />{t('medical.addVaccine')}</button><button className="button secondary" onClick={() => setModal({ type: 'form', kind: 'visit' })}><Icon name="plus" />{t('medical.addVisit')}</button></div></header>
+    <ReportButton pet={pet} />
     {pet.allergies && <aside className="health-allergies"><strong>{t('account.allergies')}</strong><p>{pet.allergies}</p></aside>}
     <div className="health-filters" role="group" aria-label={t('medical.filter')}>{['all', 'vaccine', 'visit'].map(value => <button key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{t(`medical.${value}`)}</button>)}</div>
     <ErrorNotice code={error} />{error && <button className="button secondary" onClick={load}>{t('account.retry')}</button>}
@@ -79,6 +82,7 @@ export default function Health({ pet, today }) {
       const group = visible.filter(record => record.status === status).sort((a, b) => status === 'planned' ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date));
       return group.length > 0 && <section className="health-group" key={status}><h3>{t(status === 'planned' ? 'medical.upcoming' : 'medical.history')} <span>{group.length}</span></h3><ul className="health-list">{group.map(record => <li key={record.id} className="medical-record"><div className="medical-record-top"><span className={`health-tag ${record.kind}`}>{t(`medical.${record.kind}`)}</span><span className={`health-state ${status === 'planned' && record.date < date ? 'is-overdue' : ''}`}>{t(status === 'planned' && record.date < date ? 'medical.overdue' : `medical.${status}`)}</span></div><h4>{record.title}</h4><time dateTime={record.date}>{showDate(record.date)}</time><dl>{['clinic', 'vet'].filter(key => record[key]).map(key => <div key={key}><dt>{t(`medical.${key}`)}</dt><dd>{record[key]}</dd></div>)}</dl>{record.nextDate && <p className="health-next"><strong>{t(record.kind === 'vaccine' ? 'medical.nextVaccine' : 'medical.nextVisit')}</strong> <time dateTime={record.nextDate}>{showDate(record.nextDate)}</time></p>}{record.notes && <p className="health-notes">{record.notes}</p>}<div className="health-actions"><button className="button secondary" onClick={() => setModal({ type: 'form', record })}>{t('account.edit')}</button><button className="health-remove" onClick={() => { setError(null); setModal({ type: 'delete', record }); }}>{t('account.confirmDelete')}</button></div></li>)}</ul></section>;
     })}
+    <WeightHistory pet={pet} today={today} />
     {modal?.type === 'form' && <HealthForm record={modal.record} kind={modal.kind} today={date} onClose={() => setModal(null)} onSave={save} />}
     {modal?.type === 'delete' && <Modal title={t('medical.deleteTitle')} onClose={() => { if (!pending.current) setModal(null); }}><p className="delete-explanation">{t('medical.deleteText', { title: modal.record.title })}</p><ErrorNotice code={error} /><div className="modal-actions"><button className="button secondary" disabled={busy} onClick={() => setModal(null)}>{t('cancel')}</button><button className="button danger" disabled={busy} onClick={remove}>{t(busy ? 'account.wait' : 'account.confirmDelete')}</button></div></Modal>}
   </section>;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { categories } from './data/demo.js';
 import { useDemo } from './data/DemoContext.jsx';
@@ -11,6 +11,11 @@ import LanguageSwitch from './components/LanguageSwitch.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
 import Modal from './components/Modal.jsx';
 import Diagnostics from './components/Diagnostics.jsx';
+import DayOverview from './account/DayOverview.jsx';
+import WeightHistory from './account/WeightHistory.jsx';
+import ReportButton from './account/ReportButton.jsx';
+import { demoCareTransport, demoHealth } from './data/demoCare.js';
+import { dayKey } from './account/careOverview.js';
 
 const sections = ['today', 'pets', 'food', 'health'];
 const emptyDraft = { title: '', time: '12:00', category: 'other' };
@@ -101,6 +106,9 @@ export default function App() {
   useEffect(() => { const timer = setInterval(() => setToday(dateOnly(new Date())), 60000); return () => clearInterval(timer); }, []);
   const pet = demo.pets.find(item => item.id === selected);
   const currentTasks = tasks[selected];
+  const careTransport = useMemo(() => demoCareTransport(pet, t), [pet, t]);
+  const careData = useMemo(() => ({ records: demoHealth(pet, t), meals: currentTasks.filter(task => task.category === 'food' && task.done) }), [pet, t, currentTasks]);
+  const reportPet = { ...pet, breed: t('breeds.' + pet.breed), birthDate: null, notes: t('demoNotice'), allergies: '', features: '' };
   function toggle(id) {
     setTasks(previous => ({ ...previous, [selected]: previous[selected].map(task => task.id === id ? { ...task, done: !task.done, completedAt: task.done ? null : new Date().toISOString() } : task) }));
   }
@@ -119,7 +127,9 @@ export default function App() {
       <main id="main" tabIndex={-1}><header className="page-header"><div><p className="date-line">{formatDate(today, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}<span className="header-dot" />PetDay</p><h1>{section === 'today' ? t('dashboardHeading') : t(`nav.${section}`)}</h1><p className="page-subtitle">{t(`intro.${section}`)}</p></div><span className="header-symbol"><Icon name={section === 'today' ? 'sun' : section} size={29} /></span></header>
       <div className="demo-notice"><span className="demo-badge"><span />{t('demo')}</span><p>{t('demoNotice')}</p></div>
       <div className="pet-selector" role="group" aria-label={t('selectPet')}>{demo.pets.map(item => <button key={item.id} aria-pressed={selected === item.id} onClick={() => setSelected(item.id)}><img className={`avatar-${item.species}`} src={item.image} alt="" /><span>{item.name}<small>{t(`species.${item.species}`)}</small></span>{selected === item.id && <span className="selected-check"><Icon name="check" size={14} /></span>}</button>)}</div>
+      {section === 'today' && <DayOverview pet={pet} day={dayKey(today)} tasks={currentTasks.map(task => ({ ...task, title: task.title ?? t('tasks.' + task.titleKey), completedCount: task.done ? 1 : 0, targetCount: 1 }))} onNavigate={setSection} demoData={careData} />}
       {section === 'today' ? <div className="dashboard-grid"><div className="main-column"><Progress tasks={currentTasks} pet={pet} /><Schedule tasks={currentTasks} onToggle={toggle} onAdd={() => { setError(''); setModal({ type: 'task' }); }} /><div className="care-message"><span className="category-icon care"><Icon name="paw" /></span><div><strong>{t('careMessage')}</strong><p>{t('careMessageText')}</p></div></div></div><div className="right-column"><PetCard pet={pet} today={today} onProfile={openProfile} /><Upcoming pet={pet} today={today} /></div></div> : section === 'pets' ? <section className="pets-grid" aria-label={t('nav.pets')}>{demo.pets.map(item => <PetCard key={item.id} pet={item} today={today} onProfile={openProfile} compact />)}</section> : <div className="dashboard-grid"><div className="main-column">{section === 'food' ? <Feeding tasks={currentTasks} pet={pet} /> : <Health pet={pet} />}</div><div className="right-column"><PetCard pet={pet} today={today} onProfile={openProfile} /><Upcoming pet={pet} today={today} /></div></div>}
+      {section === 'health' && <div className="demo-extra"><p className="demo-report-note">{t('care.demoWeight')}</p><ReportButton pet={reportPet} transport={careTransport} /><WeightHistory key={pet.id} pet={pet} today={today} transport={careTransport} /></div>}
       {import.meta.env.DEV && <Diagnostics />}
       <footer className="page-footer"><RouteLink href="/">{t('landing.backHome')}</RouteLink><span>{t('footer')}</span><Icon name="paw" size={16} /></footer>
       </main>
