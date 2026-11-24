@@ -47,7 +47,7 @@ test('локальная гарнитура содержит русские и �
   }
 });
 
-test('маршруты, меню, живой фрагмент и сохранение состояния', async ({ page }) => {
+test('маршруты, меню и независимый живой фрагмент главной', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 1000 });
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('У каждого хвостика свой распорядок');
@@ -64,13 +64,14 @@ test('маршруты, меню, живой фрагмент и сохране�
   await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '3');
   await page.locator('.hero-copy').getByRole('link', { name: 'Открыть демо', exact: true }).click();
   await expect(page).toHaveURL(/\/demo$/);
-  await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '3');
+  await expect(page.locator('.today-panel')).toBeVisible();
+  await expect(page.locator('.sandbox-intro')).toBeVisible();
   await page.getByRole('link', { name: 'На главную', exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '3');
   await page.goto('/demo');
   await page.reload();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('План на сегодня');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Попробуйте PetDay');
 });
 
 for (const width of [390, 768, 1440]) {

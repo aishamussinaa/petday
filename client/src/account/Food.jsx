@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal.jsx';
 import Icon from '../components/Icon.jsx';
 import { formatDate, formatTime } from '../dateUtils.js';
-import { request } from './api.js';
+import { useApi } from './ApiContext.jsx';
 import './food.css';
 
 const dayKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -40,6 +40,7 @@ function MealForm({ meal, day, onClose, onSave }) {
 }
 
 export default function Food({ pet, today }) {
+  const request = useApi();
   const { t, i18n } = useTranslation();
   const currentDay = dayKey(today);
   const [day, setDay] = useState(currentDay), [meals, setMeals] = useState([]), [loading, setLoading] = useState(true), [error, setError] = useState(null);

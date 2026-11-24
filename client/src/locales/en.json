@@ -28,7 +28,7 @@
     "previewHint": "Selected task categories are shown here. Progress covers the whole day; open the dashboard for the full list and task form.",
     "healthTitle": "Health notes, close at hand",
     "healthText": "Vet visits and upcoming events, together in one journal.",
-    "healthLimit": "The demo shows example records. Adding vaccinations and notes from appointments will come later.",
+    "healthLimit": "Try adding vaccinations and vet visits, recording weight and downloading a report. No account required.",
     "exampleRecord": "Example record",
     "finalKicker": "PetDay — here every day",
     "finalTitle": "More time together",
@@ -276,7 +276,7 @@
     "delete": "Delete profile",
     "confirmDelete": "Delete",
     "deleteTitle": "Delete {{name}}’s profile?",
-    "deleteText": "The profile for {{name}} and its photo will be permanently deleted. Personal accounts do not yet have linked tasks, feeding or health records. The demo will stay unchanged.",
+    "deleteText": "The profile for {{name}}, its photo, tasks, meals and health records will be deleted. In the demo, this affects only examples in the current tab.",
     "notConnected": {
       "today": "Personal tasks are not connected to the database yet. No sample tasks are shown here. Try the schedule in the separate demo.",
       "food": "Your feeding journal will be added in a later stage. Sample feedings are available in the demo.",
@@ -539,5 +539,26 @@
   "theme": {
     "light": "Switch to light theme",
     "dark": "Switch to dark theme"
+  },
+  "sandbox": {
+    "heading": "Try PetDay",
+    "subtitle": "Explore the full workspace without signing up",
+    "intro": "Make yourself at home",
+    "notice": "Create pets, change tasks and add records. These are examples: your changes and photos stay in this tab’s memory and disappear when you refresh. Your personal account is not affected.",
+    "try": "Things to try",
+    "tryPets": "Add a pet, choose a photo and adjust its crop. Open the profile to edit details or delete an example.",
+    "tryToday": "In Today, use +1 to record a walk. Create a task with a target of three and repeat it daily or on selected weekdays.",
+    "tryFood": "Record a meal, edit the portion and browse another date.",
+    "tryHealth": "Add a vaccination or vet visit, record weight and download a PDF from Health.",
+    "tryBirthday": "Add a pet born on this date in any past year to see the automatic birthday greeting. A birthday 1–7 days away shows a countdown.",
+    "reset": "Reset demo",
+    "resetTitle": "Start the demo again?",
+    "resetText": "This removes pets, photos, tasks and records you added to this demo only, then restores the examples.",
+    "confirmReset": "Restore examples",
+    "photoHint": "Photos stay in this tab’s memory and are not uploaded to a server.",
+    "examplePet": "Example profile for demonstration. These details do not describe a real pet.",
+    "exampleRecord": "Fictional record for demonstration.",
+    "walks": "Walks with Tommy",
+    "vaccine": "Example vaccination"
   }
 }

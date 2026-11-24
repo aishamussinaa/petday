@@ -98,7 +98,17 @@ Coverage includes data ownership, CSRF, validation, safe retries, concurrent edi
 
 ## Demo and data behavior
 
-The demo uses example pets, care tasks, veterinary events and explicitly fictional weight measurements. Changes remain in memory and reset after refreshing the page. They do not touch a real account or the database. Unknown birthdays remain unknown rather than being invented.
+The public demo now uses the same workspace components and forms as the personal account. Without signing up, visitors can:
+
+- Create, edit and delete pets; choose a photo and crop it entirely in the browser.
+- Create one-off, daily and weekday tasks, track multi-step goals, undo completion and stop routines.
+- Add, edit and delete meals, vaccinations, veterinary visits and weight measurements.
+- Explore daily reminders, birthday countdowns and automatic celebrations, and download PDF reports.
+- Switch languages and themes, navigate with the keyboard, and reset the demo after confirmation.
+
+All example records are fictional. Unknown birthdays remain unknown until a visitor supplies one. Changes and selected photos live only in the current tab's memory: they survive navigation within the site, but reset on page reload. Tabs are independent. **Reset demo** restores the examples; cancelled resets keep the current data. Photos are cropped into temporary object URLs and are never uploaded.
+
+The demo has a scoped in-memory transport with no fallback to the real API. It does not read or modify the signed-in user's account, cookies or database. The landing page's small interactive preview is independent of this full demo workspace. Authentication, server persistence and account settings belong to the full application rather than the sandbox.
 
 The full application keeps profiles, tasks, meals, health records and weight measurements in PostgreSQL. Photos are stored separately in `server/uploads/pets` by default and are served only after an ownership check. Back up the database and uploaded photos together.
 
@@ -122,7 +132,7 @@ client/
   src/
     account/          Personal account, daily care, health, food, weight and PDF
     components/       Shared controls, dialogs, icons and installation UI
-    data/             In-memory demonstration data
+    data/             Full demo store, workspace and landing preview data
     locales/          Russian, Kazakh and English translations
     Landing.jsx       Landing page
     App.jsx           Demo dashboard

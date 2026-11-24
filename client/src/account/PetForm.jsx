@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal.jsx';
 import Icon from '../components/Icon.jsx';
-import { request } from './api.js';
+import { useApi } from './ApiContext.jsx';
 
 export const species = ['cat', 'dog', 'bird', 'rabbit', 'rodent', 'fish', 'reptile', 'other'];
 const blank = { name: '', species: 'cat', breed: '', sex: 'unknown', birthDate: '', birthApproximate: false, features: '', allergies: '', notes: '' };
@@ -13,6 +13,7 @@ export function ErrorMessage({ error }) {
 }
 
 export default function PetForm({ pet, onClose, onSaved }) {
+  const request = useApi();
   const { t } = useTranslation();
   const [draft, setDraft] = useState(() => pet ? { ...pet, birthDate: pet.birthDate || '' } : { ...blank });
   const [file, setFile] = useState(null);

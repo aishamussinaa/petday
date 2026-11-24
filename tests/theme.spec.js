@@ -59,8 +59,8 @@ test('theme: landing and demo responsive layouts and dialog draft', async ({ pag
     await page.screenshot({ path: testInfo.outputPath(`landing-dark-${width}.png`), fullPage: true });
   }
   await page.goto('/demo'); await page.getByRole('button', { name: 'Добавить дело', exact: true }).click();
-  const modal = page.getByRole('dialog'); await modal.getByLabel('Название', { exact: true }).fill('Черновик сохраняется');
-  await lightButton(modal).click(); await expect(modal.getByLabel('Название', { exact: true })).toHaveValue('Черновик сохраняется');
+  const modal = page.getByRole('dialog'); await modal.locator('#task-title').fill('Черновик сохраняется');
+  await lightButton(modal).click(); await expect(modal.locator('#task-title')).toHaveValue('Черновик сохраняется');
   await darkButton(modal).click(); await page.screenshot({ path: testInfo.outputPath('dialog-dark.png'), fullPage: true });
   await page.keyboard.press('Escape');
   await page.screenshot({ path: testInfo.outputPath('demo-dark-mobile.png'), fullPage: true });

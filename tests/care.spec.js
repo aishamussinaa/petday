@@ -68,11 +68,11 @@ test('care UI: daily summary, partial failure, weight CRUD and PDF download', as
 });
 test('demo: weights, PDF in three languages and responsive today',async({page},info)=>{
   await page.goto('/demo');await expect(page.locator('.care-summary')).toBeVisible();await page.screenshot({path:info.outputPath('today-desktop.png'),fullPage:true});
-  await page.locator('.side-nav').getByRole('button',{name:'Здоровье',exact:true}).click();await expect(page.locator('.weight-latest')).toContainText('3,6');
+  await page.locator('.account-nav').getByRole('button',{name:'Здоровье',exact:true}).click();await expect(page.locator('.weight-latest')).toContainText('3,6');
   for(const [lang,label] of [['RU','Скачать отчёт PDF'],['KZ','PDF есебін жүктеу'],['EN','Download PDF report']]){
-    await page.locator('.sidebar').getByRole('button',{name:lang,exact:true}).click();const wait=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();await (await wait).saveAs(info.outputPath(`demo-${lang}.pdf`));
+    await page.locator('.account-header').getByRole('button',{name:lang,exact:true}).click();const wait=page.waitForEvent('download');await page.getByRole('button',{name:label,exact:true}).click();await (await wait).saveAs(info.outputPath(`demo-${lang}.pdf`));
   }
-  await page.setViewportSize({width:390,height:900});await page.locator('.bottom-nav').getByRole('button',{name:'Today',exact:true}).click();await page.screenshot({path:info.outputPath('today-mobile.png'),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.setViewportSize({width:390,height:900});await page.locator('.account-nav').getByRole('button',{name:'Today',exact:true}).click();await page.screenshot({path:info.outputPath('today-mobile.png'),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await page.getByRole('button',{name:'Install PetDay',exact:true}).click();await expect(page.getByRole('dialog')).toContainText('Safari');
 });
 test('PWA: manifest, icons, offline fallback and no private caches',async({page})=>{

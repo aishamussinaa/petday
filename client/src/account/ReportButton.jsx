@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { request } from './api.js';
+import { useApi } from './ApiContext.jsx';
 
-export default function ReportButton({ pet, transport = request }) {
+export default function ReportButton({ pet, transport: customTransport }) {
+  const contextTransport = useApi();
+  const transport = customTransport || contextTransport;
   const { t, i18n } = useTranslation();
   const [busy, setBusy] = useState(false), [error, setError] = useState(false);
   const pending = useRef(false);

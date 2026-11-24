@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { request } from './api.js';
+import { useApi } from './ApiContext.jsx';
 import { dayKey, localDay, healthReminders } from './careOverview.js';
 import { formatDate } from '../dateUtils.js';
 import './care.css';
 
 export default function DayOverview({ pet, day, tasks, onNavigate, demoData }) {
+  const request = useApi();
   const { t, i18n } = useTranslation();
   const [data, setData] = useState(null), [retry, setRetry] = useState(0);
   const [now, setNow] = useState(() => new Date());

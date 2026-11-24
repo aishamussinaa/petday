@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal.jsx';
 import Icon from '../components/Icon.jsx';
 import { formatDate, formatTime } from '../dateUtils.js';
-import { request } from './api.js';
+import { useApi } from './ApiContext.jsx';
 import DayOverview from './DayOverview.jsx';
 
 const dateKey = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -36,6 +36,7 @@ function TaskForm({task,day,onClose,onSaved}){
   </form></Modal>;
 }
 export default function Today({pet,onNavigate}){
+  const request = useApi();
   const {t,i18n}=useTranslation();
   const [day,setDay]=useState(dateKey),[items,setItems]=useState([]),[events,setEvents]=useState([]),[routines,setRoutines]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(null),[modal,setModal]=useState(null),[busy,setBusy]=useState(false);
   const generation=useRef(0),pending=useRef(false);

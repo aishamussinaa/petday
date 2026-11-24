@@ -42,8 +42,8 @@ test('keyboard: landing skip link, native links and mobile menu trap', async ({ 
   await page.keyboard.press('Escape'); await expect(dialog).not.toBeVisible(); await expect(menu).toBeFocused();
   await activate(page, page.locator('.hero-copy').getByRole('link', { name: 'Открыть демо', exact: true }));
   await expect(page).toHaveURL(/\/demo$/); await expect(page.locator('main')).toBeFocused();
-  await activate(page, page.locator('.bottom-nav').getByRole('button', { name: 'Питание', exact: true }));
-  await expect(page.getByRole('heading', { name: 'Журнал кормлений' })).toBeVisible();
+  await activate(page, page.locator('.account-nav').getByRole('button', { name: 'Питание', exact: true }));
+  await expect(page.locator('.feeding-panel')).toBeVisible();
 });
 
 test('keyboard: login, all account sections, forms and visible focus without mouse', async ({ page }, testInfo) => {

@@ -16,8 +16,9 @@ test('переключатель декора доступен с клавиат
   await expect(page.getByRole('switch', { name: 'Decorative motion' })).not.toBeChecked();
   await expect(page.locator('.hero-poodle')).toHaveAttribute('src', '/images/attached-poodle-cutout.png');
   await page.goto('/demo');
-  await expect(page.locator('.pet-name-row h2')).toHaveText('Томми');
-  await expect(page.locator('.pet-photo img')).toHaveAttribute('src', '/images/poodle.jpg');
+  await page.locator('.account-nav').getByRole('button', { name: 'Pets', exact: true }).click();
+  await expect(page.locator('.real-pet-card').first().getByRole('heading')).toHaveText('Томми');
+  await expect(page.locator('.real-pet-card').first().locator('img')).toHaveAttribute('src', '/images/poodle.jpg');
 });
 
 test('системное уменьшение движения имеет приоритет и реагирует на изменение', async ({ page }) => {

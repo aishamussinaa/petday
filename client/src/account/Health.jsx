@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal.jsx';
 import Icon from '../components/Icon.jsx';
 import { formatDate } from '../dateUtils.js';
-import { request } from './api.js';
+import { useApi } from './ApiContext.jsx';
 import './health.css';
 import WeightHistory from './WeightHistory.jsx';
 import ReportButton from './ReportButton.jsx';
@@ -45,6 +45,7 @@ function HealthForm({ record, kind, today, onClose, onSave }) {
 }
 
 export default function Health({ pet, today }) {
+  const request = useApi();
   const { t, i18n } = useTranslation();
   const [records, setRecords] = useState([]), [loading, setLoading] = useState(true), [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'), [modal, setModal] = useState(null), [busy, setBusy] = useState(false);

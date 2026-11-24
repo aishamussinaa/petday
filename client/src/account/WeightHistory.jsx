@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal.jsx';
-import { request } from './api.js';
+import { useApi } from './ApiContext.jsx';
 import { dayKey, localDay } from './careOverview.js';
 import { formatDate } from '../dateUtils.js';
 import './care.css';
@@ -22,7 +22,9 @@ export function WeightChart({ records }) {
     <text x="66" y="225">{records[0].date}</text><text x="586" y="225" textAnchor="end">{records.at(-1).date}</text>
   </svg>;
 }
-export default function WeightHistory({ pet, today, transport = request }) {
+export default function WeightHistory({ pet, today, transport: customTransport }) {
+  const contextTransport = useApi();
+  const transport = customTransport || contextTransport;
   const { t, i18n } = useTranslation();
   const [records, setRecords] = useState([]), [loading, setLoading] = useState(true), [error, setError] = useState(null), [modal, setModal] = useState(null), [busy, setBusy] = useState(false);
   const pending = useRef(false), generation = useRef(0);
