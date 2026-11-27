@@ -1,0 +1,24 @@
+name: Demo build and Tommy's walk
+
+on: [push]
+
+permissions:
+  contents: read
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Build the public demo
+        run: npm run build:demo
+      - name: Set up Chrome for Playwright
+        run: npx --no-install playwright install --with-deps chrome
+      - name: Test Tommy's walk in the built demo
+        run: npm run test:demo
