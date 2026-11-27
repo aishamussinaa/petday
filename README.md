@@ -8,7 +8,18 @@ A pet care web application built with **React, Node.js and PostgreSQL**. Keep pe
 
 **Portfolio project · actively developed.** The public demo runs without an account. The full application stores each user's data in a private local account.
 
-In the [interactive demo](https://petday-aisha-demo.dryduet3.chatgpt.site/demo), log a walk for Tommy to see his daily goal and seven-day total update, then open the weekly report.
+## How it works
+
+Tommy's routine is three walks a day. Open the interactive demo, switch to **EN** and select **Log a walk** on Tommy's card. [Try the demo](https://petday-aisha-demo.dryduet3.chatgpt.site/demo)
+
+| Tommy's walks | Before | After one walk |
+| --- | --- | --- |
+| Today | 1 of 3 | **2 of 3** |
+| Last 7 days | 16 of 21 | **17 of 21** |
+
+Select **Open weekly report** to see where the 17 comes from. Tommy had 15 walks over the previous six days. Logging his second walk today brings the total to 17. His plan stays at 21 walks for the seven days.
+
+PetDay updates the completed count on today's walking task. The demo keeps that task in browser memory, while a signed-in account saves it in PostgreSQL. Both use the same function to add up each day's completed and planned walks. [Weekly calculation](shared/weekly.js) · [Playwright test for Tommy's walk](tests/walk-tour.spec.js)
 
 ![Today dashboard](docs/screenshots/today-desktop.png)
 
