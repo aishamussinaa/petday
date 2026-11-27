@@ -1,19 +1,34 @@
 import { test, expect } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
-import { dayKey } from '../client/src/account/careOverview.js';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { shiftDay } from '../shared/weekly.js';
 
+test.use({ timezoneId: 'UTC' });
+
 test('vet summary previews inclusive dates and exports the selected period', async ({ page }, info) => {
-  const today = dayKey();
+  const today = '2026-11-27';
+  await page.clock.setFixedTime(new Date(today + 'T12:00:00Z'));
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto('/demo');
   await page.locator('.account-nav').getByRole('button', { name: 'Здоровье' }).click();
-  await page.getByRole('button', { name: 'Сводка для ветеринара' }).click();
   const dialog = page.getByRole('dialog');
+  for (const [date, title] of [
+    ['2026-10-27', 'Осмотр перед поездкой'],
+    ['2026-11-21', 'Контрольный осмотр Томми'],
+    ['2026-11-22', 'Повторный осмотр лапы'],
+  ]) {
+    await page.getByRole('button', { name: 'Добавить визит', exact: true }).click();
+    await dialog.locator('#health-status').selectOption('completed');
+    await dialog.locator('#health-title').fill(title);
+    await dialog.locator('#health-date').fill(date);
+    await dialog.getByRole('button', { name: 'Сохранить', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+  }
+  await page.getByRole('button', { name: 'Сводка для ветеринара' }).click();
   const sections = dialog.locator('.vet-section');
   const pdf = dialog.getByRole('button', { name: 'Скачать сводку в PDF' });
   await expect(dialog.locator('.vet-pet')).toHaveText('Томми');
-  await expect(sections.locator('h3 span')).toHaveText(['1','1','3']);
+  await expect(sections.locator('h3 span')).toHaveText(['1','4','3']);
   await expect(dialog.locator('.vet-trend')).toContainText('+0,2 кг');
   async function download(name) {
     const waiting = page.waitForEvent('download');
@@ -21,19 +36,32 @@ test('vet summary previews inclusive dates and exports the selected period', asy
     const file = await waiting;
     const output = info.outputPath(name);
     await file.saveAs(output);
-    expect((await readFile(output)).subarray(0,5).toString()).toBe('%PDF-');
-    return file.suggestedFilename();
+    const reader = fileURLToPath(new URL('./pdf-text.py', import.meta.url));
+    const text = execFileSync('python', ['-X', 'utf8', reader, output], { encoding: 'utf8' });
+    return { filename: file.suggestedFilename(), text: text.replace(/\s+/gu, ' ').trim() };
   }
-  await download('all.pdf');
+  const all = await download('all.pdf');
+  const outside = ['Осмотр перед поездкой', 'Повторный осмотр лапы', 'Визит к ветеринару', '3,6 кг'];
+  for (const entry of outside) expect(all.text).toContain(entry);
   const period = dialog.getByLabel('Период');
   await period.selectOption('30');
-  await expect(sections.locator('h3 span')).toHaveText(['0','0','3']);
+  await expect(sections.locator('h3 span')).toHaveText(['0','2','3']);
   const from = dialog.locator('#vet-from'), to = dialog.locator('#vet-to');
   await from.fill(shiftDay(today, -30));
   await to.fill(shiftDay(today, -6));
-  await expect(sections.locator('h3 span')).toHaveText(['1','0','2']);
+  await expect(sections.locator('h3 span')).toHaveText(['1','1','2']);
   await expect(dialog.locator('.vet-trend')).toContainText('+0,1 кг');
-  expect(await download('filtered.pdf')).toContain(shiftDay(today,-30) + '_' + shiftDay(today,-6));
+  const filtered = await download('filtered.pdf');
+  expect(filtered.filename).toContain('2026-10-28_2026-11-21');
+  for (const entry of [
+    '28 октября 2026 г. — 21 ноября 2026 г.',
+    'Пример вакцинации 28 октября 2026 г.',
+    'Контрольный осмотр Томми 21 ноября 2026 г.',
+    '30 октября 2026 г. · 3,4 кг',
+    '21 ноября 2026 г. · 3,5 кг',
+    'изменение +0,1 кг',
+  ]) expect(filtered.text).toContain(entry);
+  for (const entry of outside) expect(filtered.text).not.toContain(entry);
   await from.fill(today);
   await expect(dialog.getByRole('alert')).toBeVisible();
   await expect(pdf).toHaveCount(0);

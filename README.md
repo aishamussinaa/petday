@@ -1,6 +1,6 @@
 # PetDay
 
-[![Demo build and Tommy's walk](https://github.com/aishamussinaa/petday/actions/workflows/demo.yml/badge.svg?branch=main&event=push)](https://github.com/aishamussinaa/petday/actions/workflows/demo.yml?query=branch%3Amain)
+[![Demo build, walks and vet PDF](https://github.com/aishamussinaa/petday/actions/workflows/demo.yml/badge.svg?branch=main&event=push)](https://github.com/aishamussinaa/petday/actions/workflows/demo.yml?query=branch%3Amain)
 
 [Live demo](https://petday-aisha-demo.dryduet3.chatgpt.site) · [Source code](https://github.com/aishamussinaa/petday)
 
@@ -115,7 +115,7 @@ npm.cmd run test:unit
 - `test` runs the Playwright suite against separate servers on ports `3011` and `5183` and the guarded test database.
 - `test:unit` checks validation, birthday calculations and PostgreSQL recovery behavior.
 
-On every push, GitHub Actions builds the public demo and runs the desktop and mobile walk tests against that build. To reproduce the check locally with Chrome installed, run `npm run build:demo` followed by `npm run test:demo`.
+On every push, GitHub Actions builds the demo, tests Tommy’s walk and downloads a vet summary for a custom date range. The test reads the exported PDF to check that it includes records on both boundary dates and excludes records outside the range. To run these checks locally, install Chrome and Python 3.12, run `python -m pip install pypdf==6.21.4`, then run `npm run build:demo` and `npm run test:demo`.
 
 Coverage includes data ownership, CSRF, validation, safe retries, concurrent edits, persistence, photo handling, daily goals, health and meal records, weight history, PDF download, themes, keyboard navigation, localization, responsive layouts and the offline fallback. Screenshots are written to the ignored `test-results/` directory. PDF output is also visually checked after rendering.
 
