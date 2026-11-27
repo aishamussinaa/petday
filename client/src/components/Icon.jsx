@@ -1,5 +1,6 @@
 const paths = {
   paw: <><path d="M8.5 14.5C10 12 10.3 10 12 10s2 2 3.5 4.5c3 4.5-.8 5.5-3.5 4-2.7 1.5-6.5.5-3.5-4Z"/><ellipse cx="5" cy="10" rx="1.7" ry="2.5"/><ellipse cx="9" cy="5.5" rx="1.7" ry="2.5"/><ellipse cx="15" cy="5.5" rx="1.7" ry="2.5"/><ellipse cx="19" cy="10" rx="1.7" ry="2.5"/></>,
+  calendar: <><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/></>,
   today: <><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 11h18m-13 5 3 3 5-5"/></>,
   pets: <><path d="m5 11-2-8 7 4m4 0 7-4-2 8"/><path d="M20 13c0 5-3 8-8 8s-8-3-8-8 3-7 8-7 8 2 8 7Z"/><path d="M8 13h.01M16 13h.01m-6 3 2 2 2-2"/></>,
   food: <><path d="M3 12h18a9 9 0 0 1-18 0Zm1 9h16M8 3v4m4-5v5m4-4v4"/></>,

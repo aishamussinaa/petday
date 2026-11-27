@@ -45,7 +45,8 @@
     "today": "Today",
     "pets": "Pets",
     "food": "Nutrition",
-    "health": "Health"
+    "health": "Health",
+    "calendar": "Calendar"
   },
   "intro": {
     "today": "Choose a pet and tick off completed tasks.",
@@ -590,5 +591,18 @@
     "weightRange": "{{first}} → {{last}} kg · {{start}} — {{end}}",
     "weightHint": "Difference between the first and last measurements in this period, without assessing a healthy range.",
     "error": "Could not load the weekly overview. Please try again."
+  },
+  "eventsView": {
+    "title": "Event calendar",
+    "allPets": "All pets",
+    "current": "This month",
+    "prev": "Previous month",
+    "next": "Next month",
+    "dayLabel": "{{date}}, events: {{count}}",
+    "agenda": "Events this month",
+    "allDays": "Show whole month",
+    "emptyDay": "No events on this day.",
+    "emptyMonth": "No events this month.",
+    "error": "Could not load health records for {{pets}}."
   }
 }

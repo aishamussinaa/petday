@@ -12,6 +12,7 @@ A pet care web application built with **React, Node.js and PostgreSQL**. Keep pe
 
 - **Pet profiles:** photos with crop and zoom controls, species, breed, birthday, allergies and notes.
 - **Daily care:** one-off tasks, daily or weekly routines, and goals such as three walks a day. Track completion, undo a step and review activity history.
+- **Event calendar:** browse vaccinations, veterinary visits, follow-up dates and annual birthdays across all pets. Select a month, day or pet, then open the original record.
 - **Weekly overview:** a seven-day care summary per pet, including completed care steps, walks, days with all planned goals met, meal counts and weight change. Select any day to open its tasks. Unvisited repeating tasks count toward the plan; deleted instances stay excluded.
 - **Mobile workspace:** fixed bottom navigation, compact demo guidance and large touch controls.
 - **Today overview:** completed care steps, recorded meals, and health reminders with direct links to the relevant sections.

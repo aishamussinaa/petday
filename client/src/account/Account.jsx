@@ -10,6 +10,7 @@ import { RouteLink, useRoute } from '../routing.jsx';
 import { calendarAge, dayDistance, nextBirthday, dateOnly, formatDate } from '../dateUtils.js';
 import { request as networkRequest, restoreSession } from './api.js';
 import { useApi } from './ApiContext.jsx';
+import EventCalendar from './EventCalendar.jsx';
 import Today from './Today.jsx';
 import Health from './Health.jsx';
 import Food from './Food.jsx';
@@ -82,9 +83,11 @@ export default function Account({ demo = false, onReset }) {
   const [section, setSection] = useState(demo ? 'today' : 'pets');
   const [modal, setModal] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [calendarRecord, setCalendarRecord] = useState(null);
   const actionPending = useRef(false);
   const pet = pets.find(item => item.id === selected) || pets[0];
   function changeSection(value) {
+    setCalendarRecord(null);
     setSection(value);
     if (window.matchMedia('(max-width:600px)').matches) requestAnimationFrame(() => document.getElementById('account-section')?.focus());
   }
@@ -117,13 +120,17 @@ export default function Account({ demo = false, onReset }) {
       {loading ? <p role="status">{t('account.loading')}</p> : !user ? <Authentication onUser={loggedIn} initialError={error} retry={load} /> : <>
         <header className="account-title"><div><p className="date-line">{formatDate(today, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}</p><h1>{t(demo ? 'sandbox.heading' : 'account.myPets')}</h1><p className="account-email">{demo ? t('sandbox.subtitle') : user.email}</p></div><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form' }); }}><Icon name="plus" />{t('account.addPet')}</button></header>
         {demo && <aside className="sandbox-intro"><h2>{t('sandbox.intro')}</h2><p className="sandbox-full-notice">{t('sandbox.notice')}</p><p className="sandbox-mobile-notice">{t('sandbox.shortNotice')}</p><details><summary>{t('sandbox.try')}</summary><ol>{['tryPets','tryToday','tryFood','tryHealth','tryBirthday'].map(key => <li key={key}>{t('sandbox.' + key)}</li>)}</ol></details></aside>}
-        <nav className="account-nav" id="account-navigation" tabIndex={-1} aria-label={t('navigation')}>{['pets', 'today', 'food', 'health'].map(value => <button key={value} aria-current={section === value ? 'page' : undefined} onClick={() => changeSection(value)}><Icon name={value} size={20} />{t(`nav.${value}`)}</button>)}</nav>
+        <nav className="account-nav" id="account-navigation" tabIndex={-1} aria-label={t('navigation')}>{['pets', 'today', 'food', 'health', 'calendar'].map(value => <button key={value} aria-current={section === value ? 'page' : undefined} onClick={() => changeSection(value)}><Icon name={value} size={20} />{t(`nav.${value}`)}</button>)}</nav>
         <ErrorMessage error={error} />{error && <button className="button secondary" onClick={load}>{t('account.retry')}</button>}
         {!pets.length && !error ? <section className="account-empty"><div className="photo-placeholder"><Icon name="paw" size={66} /></div><h2>{t('account.emptyTitle')}</h2><p>{t('account.emptyText')}</p><button className="button primary" onClick={() => setModal({ type: 'form' })}>{t('account.addFirst')}</button><p className="small muted">{t(demo ? 'sandbox.photoHint' : 'account.privateHint')}</p></section> : pets.length > 0 && <>
-          <div className="real-pet-selector" role="group" aria-label={t('selectPet')}>{pets.map(item => <button key={item.id} aria-label={item.name} aria-pressed={pet?.id === item.id} onClick={() => setSelected(item.id)}><Photo pet={item} /><span>{item.name}</span></button>)}</div>
-          <BirthdayCard pet={pet} now={today} />
+          {section !== 'calendar' && <><div className="real-pet-selector" role="group" aria-label={t('selectPet')}>{pets.map(item => <button key={item.id} aria-label={item.name} aria-pressed={pet?.id === item.id} onClick={() => { setCalendarRecord(null); setSelected(item.id); }}><Photo pet={item} /><span>{item.name}</span></button>)}</div>
+          <BirthdayCard pet={pet} now={today} /></>}
           <div className="account-section" id="account-section" tabIndex={-1}>
-          {section === 'pets' ? <div className="account-pet-grid">{pets.map(item => <article className={`pet-card real-pet-card ${item.id === pet?.id ? 'is-selected' : ''}`} key={item.id}><Photo pet={item} /><div className="pet-card-content"><h2>{item.name}</h2><p className="muted">{t(`account.speciesOptions.${item.species}`)}{item.breed && ` · ${item.breed}`}</p><BirthDetails pet={item} today={today} /><div className="account-card-actions"><button className="button secondary" onClick={() => setModal({ type: 'profile', pet: item })}>{t('viewProfile')}</button><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form', pet: item }); }}>{t('account.edit')}</button></div></div></article>)}</div> : section === 'today' ? <Today key={pet.id} pet={pet} onNavigate={changeSection} /> : section === 'health' ? <Health key={pet.id} pet={pet} today={today} /> : section === 'food' ? <Food key={pet.id} pet={pet} today={today} /> : <section className="account-empty account-unavailable"><Icon name={section} size={44} /><h2>{t(`nav.${section}`)} · {pet.name}</h2><p>{t(`account.notConnected.${section}`)}</p><RouteLink className="button secondary" href="/demo">{t('landing.openDemo')}</RouteLink></section>}
+          {section === 'calendar' ? <EventCalendar pets={pets} today={today} onOpen={event => {
+            setSelected(event.pet.id);
+            if (event.record) { changeSection('health'); setCalendarRecord(event.record); }
+            else setModal({ type: 'profile', pet: event.pet });
+          }} /> : section === 'pets' ? <div className="account-pet-grid">{pets.map(item => <article className={`pet-card real-pet-card ${item.id === pet?.id ? 'is-selected' : ''}`} key={item.id}><Photo pet={item} /><div className="pet-card-content"><h2>{item.name}</h2><p className="muted">{t(`account.speciesOptions.${item.species}`)}{item.breed && ` · ${item.breed}`}</p><BirthDetails pet={item} today={today} /><div className="account-card-actions"><button className="button secondary" onClick={() => setModal({ type: 'profile', pet: item })}>{t('viewProfile')}</button><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form', pet: item }); }}>{t('account.edit')}</button></div></div></article>)}</div> : section === 'today' ? <Today key={pet.id} pet={pet} onNavigate={changeSection} /> : section === 'health' ? <Health key={pet.id} pet={pet} today={today} initialRecord={calendarRecord?.petId === pet.id ? calendarRecord : null} /> : section === 'food' ? <Food key={pet.id} pet={pet} today={today} /> : <section className="account-empty account-unavailable"><Icon name={section} size={44} /><h2>{t(`nav.${section}`)} · {pet.name}</h2><p>{t(`account.notConnected.${section}`)}</p><RouteLink className="button secondary" href="/demo">{t('landing.openDemo')}</RouteLink></section>}
           </div>
         </>}
       </>}

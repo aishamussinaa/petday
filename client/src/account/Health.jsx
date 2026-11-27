@@ -44,11 +44,11 @@ function HealthForm({ record, kind, today, onClose, onSave }) {
   </Modal>;
 }
 
-export default function Health({ pet, today }) {
+export default function Health({ pet, today, initialRecord }) {
   const request = useApi();
   const { t, i18n } = useTranslation();
   const [records, setRecords] = useState([]), [loading, setLoading] = useState(true), [error, setError] = useState(null);
-  const [filter, setFilter] = useState('all'), [modal, setModal] = useState(null), [busy, setBusy] = useState(false);
+  const [filter, setFilter] = useState('all'), [modal, setModal] = useState(() => initialRecord ? { type: 'form', record: initialRecord } : null), [busy, setBusy] = useState(false);
   const generation = useRef(0), pending = useRef(false);
   const base = `/pets/${pet.id}/health`, date = dayKey(today);
   async function load() {
