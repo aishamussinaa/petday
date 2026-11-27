@@ -1,0 +1,15 @@
+.sandbox-mobile-notice{display:none}.account-section{scroll-margin-top:18px}.account-section:focus{outline:none}
+@media(max-width:600px){
+  .account-page.has-workspace .account-main{padding:20px 16px 32px}
+  .account-header{padding:12px 16px;gap:8px}.account-header .brand{font-size:28px}.account-header .brand svg{width:36px;height:36px}
+  .account-title h1,.sandbox-page .account-title h1{font-size:30px;margin:8px 0}.account-title .date-line{font-size:14px;margin:0}.account-email{font-size:15px;line-height:1.45;margin:8px 0}.account-title>.button{width:auto;margin-top:10px;min-height:44px;font-size:15px;padding:10px 16px}.sandbox-page .account-main{padding-top:20px}
+  .sandbox-page .sandbox-intro{padding:12px 16px;margin:16px 0;border-radius:16px}.sandbox-intro h2,.sandbox-intro .sandbox-full-notice{display:none}.sandbox-intro .sandbox-mobile-notice{display:block;font-size:14px;line-height:1.5}.sandbox-page .sandbox-intro details{margin-top:4px;font-size:15px}.sandbox-intro summary{min-height:44px}.sandbox-intro li{line-height:1.55}
+  .account-page.has-workspace .account-nav{position:fixed;bottom:0;left:0;right:0;z-index:30;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:0;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:var(--surface);border:0;border-top:1px solid var(--line);box-shadow:0 -4px 20px #0000000d}
+  .account-page.has-workspace .account-nav button{display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0;min-height:56px;font-size:14px;line-height:1.2;padding:6px 2px;border-radius:12px;overflow-wrap:anywhere}.account-nav svg{flex-shrink:0}
+  .account-page.has-workspace .account-footer{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+  .has-workspace :is(button,a,input,select,textarea,summary){scroll-margin-bottom:110px}
+  .real-pet-selector{margin:18px 0;gap:8px}.real-pet-selector button{gap:8px;padding:6px 14px 6px 6px;font-size:15px}.real-pet-selector .real-photo,.real-pet-selector .photo-placeholder{width:36px;height:36px}
+  .today-heading{gap:12px}.today-heading h2{font-size:27px}.today-heading .eyebrow{margin-bottom:8px}.today-heading>.button{margin-top:12px}.today-dates{gap:8px}.today-dates .button{padding:10px 14px}.today-dates input{min-width:0}
+  .today-task{padding:18px}.today-task-main{gap:10px}.today-actions{gap:12px}.today-remove{min-height:44px}.goal-counter .button{min-height:46px}
+  .account-section{min-width:0}.account-section:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+}

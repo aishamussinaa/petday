@@ -1,3 +1,4 @@
+import { shiftDay, weeklySummary } from '../../shared/weekly.js';
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
 import { database } from './db.js';
@@ -26,6 +27,22 @@ tasks.use(session, requireUser, async (req,_res,next) => {
   if (!uuid(req.params.petId) || !await database().pet.findFirst({where:{id:req.params.petId,userId:req.session.user.id},select:{id:true}})) throw new ApiError(404,'PET_NOT_FOUND');
   next();
 });
+// Statistics are read-only: unmaterialized routines are projected in memory.
+tasks.get('/weekly', async (req, res) => {
+  const end = req.query.end;
+  if (!validDate(end, todayInZone(req.query.timeZone)) || end < '1900-01-07') throw new ApiError(400, 'TASK_DATE');
+  const start = shiftDay(end, -6), petId = req.params.petId;
+  const range = { gte: day(start), lte: day(end) };
+  const [saved, rules, meals, weights] = await database().$transaction([
+    database().careTask.findMany({ where: { petId, day: range }, select: { id: true, day: true, category: true, targetCount: true, completedCount: true, routineId: true, deletedAt: true } }),
+    database().careRoutine.findMany({ where: { petId, startDay: { lte: day(end) }, OR: [{ stopDay: null }, { stopDay: { gt: day(start) } }] }, select: { id: true, startDay: true, stopDay: true, weekdays: true, category: true, targetCount: true } }),
+    database().meal.findMany({ where: { petId, day: range, deletedAt: null }, select: { day: true } }),
+    database().weightRecord.findMany({ where: { petId, date: range, deletedAt: null }, select: { id: true, date: true, kg: true, createdAt: true } }),
+  ], { isolationLevel: 'RepeatableRead' });
+  const date = value => value?.toISOString().slice(0, 10) || null;
+  res.json(weeklySummary({ end, tasks: saved.map(item => ({ ...item, day: date(item.day) })), routines: rules.map(item => ({ ...item, startDay: date(item.startDay), stopDay: date(item.stopDay) })), meals: meals.map(item => ({ day: date(item.day) })), weights: weights.map(item => ({ ...item, date: date(item.date), kg: Number(item.kg), createdAt: item.createdAt.toISOString() })) }));
+});
+
 tasks.get('/', async (req,res) => {
   const selected = day(req.query.date);
   const where = {petId:req.params.petId,day:selected};

@@ -559,6 +559,36 @@
     "examplePet": "Example profile for demonstration. These details do not describe a real pet.",
     "exampleRecord": "Fictional record for demonstration.",
     "walks": "Walks with Tommy",
-    "vaccine": "Example vaccination"
+    "vaccine": "Example vaccination",
+    "shortNotice": "No sign-up needed. Records and photos stay in this tab and reset on refresh."
+  },
+  "weekly": {
+    "view": "Overview period",
+    "day": "Daily",
+    "week": "Weekly",
+    "title": "A week of care",
+    "period": "{{start}} — {{end}}",
+    "end": "Week ending",
+    "previous": "Previous 7 days",
+    "next": "Next 7 days",
+    "current": "Last 7 days",
+    "hint": "Seven days ending on the selected date. Repeating tasks count even on days you did not open the app. Today’s results can still change.",
+    "steps": "Care steps",
+    "percent": "{{value}}% of the plan completed",
+    "noPlan": "No plan",
+    "walks": "Walks",
+    "walkHint": "Completed / planned",
+    "completeDays": "All-goal days",
+    "daysHint": "Out of days with planned tasks",
+    "meals": "Meals logged",
+    "mealsHint": "Entries in the feeding diary",
+    "byDay": "Daily progress",
+    "openDay": "Select a day to open its tasks.",
+    "dayLabel": "Open tasks for {{date}}: {{done}} of {{total}}",
+    "weight": "Weight change",
+    "weightMissing": "At least two measurements within these 7 days are needed to compare.",
+    "weightRange": "{{first}} → {{last}} kg · {{start}} — {{end}}",
+    "weightHint": "Difference between the first and last measurements in this period, without assessing a healthy range.",
+    "error": "Could not load the weekly overview. Please try again."
   }
 }

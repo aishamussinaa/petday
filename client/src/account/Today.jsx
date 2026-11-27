@@ -5,6 +5,7 @@ import Icon from '../components/Icon.jsx';
 import { formatDate, formatTime } from '../dateUtils.js';
 import { useApi } from './ApiContext.jsx';
 import DayOverview from './DayOverview.jsx';
+import WeeklyOverview from './WeeklyOverview.jsx';
 
 const dateKey = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const localDay = value => {const [y,m,d]=value.split('-').map(Number);return new Date(y,m-1,d,12);};
@@ -39,6 +40,7 @@ export default function Today({pet,onNavigate}){
   const request = useApi();
   const {t,i18n}=useTranslation();
   const [day,setDay]=useState(dateKey),[items,setItems]=useState([]),[events,setEvents]=useState([]),[routines,setRoutines]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(null),[modal,setModal]=useState(null),[busy,setBusy]=useState(false);
+  const [view,setView]=useState('day'),[weekEnd,setWeekEnd]=useState(dateKey);
   const generation=useRef(0),pending=useRef(false);
   const base=`/pets/${pet.id}/tasks`;
   async function load(){
@@ -47,8 +49,8 @@ export default function Today({pet,onNavigate}){
     catch(failure){if(version===generation.current){setError(failure.code);setItems([]);setEvents([]);}}
     finally{if(version===generation.current)setLoading(false);}
   }
-  useEffect(()=>{load();return()=>{generation.current++;};},[day,pet.id]);
-  useEffect(()=>{let previous=dateKey();const tick=()=>{const now=dateKey();if(now!==previous){const old=previous;previous=now;setDay(value=>value===old?now:value);}};const timer=setInterval(tick,30000);document.addEventListener('visibilitychange',tick);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',tick);};},[]);
+  useEffect(()=>{if(view==='day')load();return()=>{generation.current++;};},[day,pet.id,view]);
+  useEffect(()=>{let previous=dateKey();const tick=()=>{const now=dateKey();if(now!==previous){const old=previous;previous=now;setDay(value=>value===old?now:value);setWeekEnd(value=>value===old?now:value);}};const timer=setInterval(tick,30000);document.addEventListener('visibilitychange',tick);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',tick);};},[]);
   const completed=items.filter(item=>item.completedAt).length;
   const timestamp=value=>`${formatDate(new Date(value),i18n.language,{day:'numeric',month:'long'})}, ${new Intl.DateTimeFormat(i18n.language,{hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(value))}`;
   async function mutate(item,mode){
@@ -62,7 +64,9 @@ export default function Today({pet,onNavigate}){
   }
   function shift(offset){const next=localDay(day);next.setDate(next.getDate()+offset);const value=dateKey(next);if(value>='1900-01-01'&&value<='2100-12-31')setDay(value);}
   return <section className="today-panel" aria-label={t('today.heading',{name:pet.name})}>
-    <div className="today-heading"><div><p className="eyebrow">{t('today.eyebrow')}</p><h2>{t('today.heading',{name:pet.name})}</h2></div><button className="button primary" disabled={busy} onClick={()=>setModal({type:'form'})}><Icon name="plus"/>{t('today.add')}</button></div>
+    <div className="today-heading"><div><p className="eyebrow">{t('today.eyebrow')}</p><h2>{t('today.heading',{name:pet.name})}</h2></div>{view==='day'&&<button className="button primary" disabled={busy} onClick={()=>setModal({type:'form'})}><Icon name="plus"/>{t('today.add')}</button>}</div>
+    <div className="today-view" role="group" aria-label={t('weekly.view')}><button aria-pressed={view==='day'} onClick={()=>setView('day')}>{t('weekly.day')}</button><button aria-pressed={view==='week'} onClick={()=>{setWeekEnd(day>dateKey()?dateKey():day<'1900-01-07'?'1900-01-07':day);setView('week');}}>{t('weekly.week')}</button></div>
+    {view==='week'?<WeeklyOverview pet={pet} end={weekEnd} onEnd={setWeekEnd} onDay={value=>{setDay(value);setView('day');}}/>:<>
     <div className="today-dates"><button className="button secondary" aria-label={t('today.previous')} disabled={busy||loading} onClick={()=>shift(-1)}>←</button><label>{t('today.date')}<input aria-label={t('today.date')} type="date" min="1900-01-01" max="2100-12-31" value={day} disabled={busy} onChange={e=>{if(e.target.validity.valid&&e.target.value)setDay(e.target.value);}}/></label><button className="button secondary" aria-label={t('today.next')} disabled={busy||loading} onClick={()=>shift(1)}>→</button><button className="button secondary" disabled={busy} onClick={()=>setDay(dateKey())}>{t('nav.today')}</button></div>
     <p className="muted">{formatDate(localDay(day),i18n.language,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
     <ErrorNotice code={error}/>{error&&<button className="button secondary" onClick={load} disabled={busy}>{t('account.retry')}</button>}
@@ -76,6 +80,7 @@ export default function Today({pet,onNavigate}){
       {day>dateKey()&&<p className="small muted">{t('today.futureHint')}</p>}
       <details className="today-routines"><summary>{t('today.routines')} · {routines.length}</summary><p className="small muted">{t('today.routinesHint')}</p>{routines.map(routine=><article key={routine.id}><h3>{routine.title}</h3><p>{t('today.routineTarget',{total:routine.targetCount})} · {routine.weekdays.length===7?t('today.repeatOptions.daily'):routine.weekdays.map(n=>t(`today.weekdays.${n}`)).join(', ')}</p><p className="small muted">{t('today.startsOn',{date:routine.startDay})}</p><button className="button secondary" disabled={busy} onClick={()=>setModal({type:'stop',task:routine})}>{t('today.stop')}</button></article>)}</details>
       <details className="today-history"><summary>{t('today.history')}</summary>{!events.length?<p className="muted">{t('today.noHistory')}</p>:<ol>{events.map(event=><li key={event.id}><span>{t(`today.events.${event.action}`,{title:event.title})}{event.completedCount!=null&&event.targetCount>1?` · ${event.completedCount}/${event.targetCount}`:''}</span><time dateTime={event.createdAt}>{timestamp(event.createdAt)}</time></li>)}</ol>}<p className="small muted">{t('today.historyHint')}</p></details>
+    </>}
     </>}
     {modal?.type==='form'&&<TaskForm task={modal.task} day={day} onClose={()=>setModal(null)} onSaved={async draft=>{const repeating=!modal.task&&draft.repeat!=='once';await request(modal.task?`${base}/${modal.task.id}`:repeating?`${base}/routines`:base,{method:modal.task?'PUT':'POST',body:{...draft,weekdays:draft.repeat==='daily'?[0,1,2,3,4,5,6]:draft.weekdays}});await load();}}/>}
     {modal?.type==='stop'&&<Modal title={t('today.stop')} onClose={()=>{if(!busy)setModal(null);}}><p className="delete-explanation">{t('today.stopConfirm',{title:modal.task.title})}</p><ErrorNotice code={error}/><div className="modal-actions"><button className="button secondary" disabled={busy} onClick={()=>setModal(null)}>{t('cancel')}</button><button className="button danger" disabled={busy} onClick={()=>mutate(modal.task,'stop')}>{t('today.stop')}</button></div></Modal>}

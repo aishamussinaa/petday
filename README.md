@@ -12,6 +12,8 @@ A pet care web application built with **React, Node.js and PostgreSQL**. Keep pe
 
 - **Pet profiles:** photos with crop and zoom controls, species, breed, birthday, allergies and notes.
 - **Daily care:** one-off tasks, daily or weekly routines, and goals such as three walks a day. Track completion, undo a step and review activity history.
+- **Weekly overview:** a seven-day care summary per pet, including completed care steps, walks, days with all planned goals met, meal counts and weight change. Select any day to open its tasks. Unvisited repeating tasks count toward the plan; deleted instances stay excluded.
+- **Mobile workspace:** fixed bottom navigation, compact demo guidance and large touch controls.
 - **Today overview:** completed care steps, recorded meals, and health reminders with direct links to the relevant sections.
 - **In-app reminders:** unfinished tasks whose scheduled time has arrived, health plans and follow-up dates within seven days, and overdue dates that need checking.
 - **Birthdays:** a seven-day countdown and an automatic cake celebration on the pet's birthday, respecting reduced-motion preferences.
@@ -135,17 +137,22 @@ client/
     data/             Full demo store, workspace and landing preview data
     locales/          Russian, Kazakh and English translations
     Landing.jsx       Landing page
-    App.jsx           Demo dashboard
+    App.jsx           Interactive landing-page preview
     main.jsx          Application entry point
 server/
   prisma/             Schema and additive migrations
   src/                Express routes, validation, sessions and photo storage
+shared/               Date-only weekly aggregation shared by API and demo
 scripts/              Database setup, maintenance and public demo build
 tests/                Browser, API and unit tests
 docs/                 Screenshots and development notes
 ```
 
 ## Screenshots
+
+![Weekly care overview](docs/screenshots/weekly-desktop.png)
+
+<img src="docs/screenshots/weekly-mobile.png" alt="PetDay weekly overview with mobile bottom navigation" width="320">
 
 <img src="docs/screenshots/today-mobile.png" alt="PetDay mobile dashboard" width="320">
 

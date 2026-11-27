@@ -16,6 +16,7 @@ import Food from './Food.jsx';
 import ReportButton from './ReportButton.jsx';
 import BirthdayCard from './BirthdayCard.jsx';
 import './today.css';
+import './mobile.css';
 import PetForm, { ErrorMessage } from './PetForm.jsx';
 
 export const localBirth = value => { const [y, m, d] = value.split('-').map(Number); return new Date(y, m - 1, d, 12); };
@@ -83,6 +84,10 @@ export default function Account({ demo = false, onReset }) {
   const [busy, setBusy] = useState(false);
   const actionPending = useRef(false);
   const pet = pets.find(item => item.id === selected) || pets[0];
+  function changeSection(value) {
+    setSection(value);
+    if (window.matchMedia('(max-width:600px)').matches) requestAnimationFrame(() => document.getElementById('account-section')?.focus());
+  }
   async function load() {
     setLoading(true); setError(null);
     try { const data = await (demo ? request('/auth/session') : restoreSession()); setUser(data.user); if (data.user) { const result = await request('/pets'); setPets(result.pets); } }
@@ -107,17 +112,19 @@ export default function Account({ demo = false, onReset }) {
     catch (failure) { setError(failure.code); }
     finally { actionPending.current = false; setBusy(false); }
   }
-  return <div className={`account-page ${demo ? 'sandbox-page' : ''}`}><SkipLinks mainId="account-main" navigationId={user && !loading ? 'account-navigation' : undefined} /><header className="account-header"><RouteLink className="brand" href="/" aria-label={t('landing.home')}><Brand /></RouteLink><LanguageSwitch /><ThemeToggle />{!demo && <RouteLink href="/demo" className="account-demo-link">{t('landing.openDemo')}</RouteLink>}{demo && <button className="button secondary" onClick={() => setModal({ type: 'reset' })}>{t('sandbox.reset')}</button>}{user && !demo && <button disabled={busy} className="button secondary" onClick={logout}>{t('account.logout')}</button>}</header>
+  return <div className={`account-page ${user && !loading ? 'has-workspace' : ''} ${demo ? 'sandbox-page' : ''}`}><SkipLinks mainId="account-main" navigationId={user && !loading ? 'account-navigation' : undefined} /><header className="account-header"><RouteLink className="brand" href="/" aria-label={t('landing.home')}><Brand /></RouteLink><LanguageSwitch /><ThemeToggle />{!demo && <RouteLink href="/demo" className="account-demo-link">{t('landing.openDemo')}</RouteLink>}{demo && <button className="button secondary" onClick={() => setModal({ type: 'reset' })}>{t('sandbox.reset')}</button>}{user && !demo && <button disabled={busy} className="button secondary" onClick={logout}>{t('account.logout')}</button>}</header>
     <main className="account-main" id="account-main" tabIndex={-1}>
       {loading ? <p role="status">{t('account.loading')}</p> : !user ? <Authentication onUser={loggedIn} initialError={error} retry={load} /> : <>
         <header className="account-title"><div><p className="date-line">{formatDate(today, i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}</p><h1>{t(demo ? 'sandbox.heading' : 'account.myPets')}</h1><p className="account-email">{demo ? t('sandbox.subtitle') : user.email}</p></div><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form' }); }}><Icon name="plus" />{t('account.addPet')}</button></header>
-        {demo && <aside className="sandbox-intro"><h2>{t('sandbox.intro')}</h2><p>{t('sandbox.notice')}</p><details><summary>{t('sandbox.try')}</summary><ol>{['tryPets','tryToday','tryFood','tryHealth','tryBirthday'].map(key => <li key={key}>{t('sandbox.' + key)}</li>)}</ol></details></aside>}
-        <nav className="account-nav" id="account-navigation" tabIndex={-1} aria-label={t('navigation')}>{['pets', 'today', 'food', 'health'].map(value => <button key={value} aria-current={section === value ? 'page' : undefined} onClick={() => setSection(value)}><Icon name={value} size={20} />{t(`nav.${value}`)}</button>)}</nav>
+        {demo && <aside className="sandbox-intro"><h2>{t('sandbox.intro')}</h2><p className="sandbox-full-notice">{t('sandbox.notice')}</p><p className="sandbox-mobile-notice">{t('sandbox.shortNotice')}</p><details><summary>{t('sandbox.try')}</summary><ol>{['tryPets','tryToday','tryFood','tryHealth','tryBirthday'].map(key => <li key={key}>{t('sandbox.' + key)}</li>)}</ol></details></aside>}
+        <nav className="account-nav" id="account-navigation" tabIndex={-1} aria-label={t('navigation')}>{['pets', 'today', 'food', 'health'].map(value => <button key={value} aria-current={section === value ? 'page' : undefined} onClick={() => changeSection(value)}><Icon name={value} size={20} />{t(`nav.${value}`)}</button>)}</nav>
         <ErrorMessage error={error} />{error && <button className="button secondary" onClick={load}>{t('account.retry')}</button>}
         {!pets.length && !error ? <section className="account-empty"><div className="photo-placeholder"><Icon name="paw" size={66} /></div><h2>{t('account.emptyTitle')}</h2><p>{t('account.emptyText')}</p><button className="button primary" onClick={() => setModal({ type: 'form' })}>{t('account.addFirst')}</button><p className="small muted">{t(demo ? 'sandbox.photoHint' : 'account.privateHint')}</p></section> : pets.length > 0 && <>
           <div className="real-pet-selector" role="group" aria-label={t('selectPet')}>{pets.map(item => <button key={item.id} aria-label={item.name} aria-pressed={pet?.id === item.id} onClick={() => setSelected(item.id)}><Photo pet={item} /><span>{item.name}</span></button>)}</div>
           <BirthdayCard pet={pet} now={today} />
-          {section === 'pets' ? <div className="account-pet-grid">{pets.map(item => <article className={`pet-card real-pet-card ${item.id === pet?.id ? 'is-selected' : ''}`} key={item.id}><Photo pet={item} /><div className="pet-card-content"><h2>{item.name}</h2><p className="muted">{t(`account.speciesOptions.${item.species}`)}{item.breed && ` · ${item.breed}`}</p><BirthDetails pet={item} today={today} /><div className="account-card-actions"><button className="button secondary" onClick={() => setModal({ type: 'profile', pet: item })}>{t('viewProfile')}</button><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form', pet: item }); }}>{t('account.edit')}</button></div></div></article>)}</div> : section === 'today' ? <Today key={pet.id} pet={pet} onNavigate={setSection} /> : section === 'health' ? <Health key={pet.id} pet={pet} today={today} /> : section === 'food' ? <Food key={pet.id} pet={pet} today={today} /> : <section className="account-empty account-unavailable"><Icon name={section} size={44} /><h2>{t(`nav.${section}`)} · {pet.name}</h2><p>{t(`account.notConnected.${section}`)}</p><RouteLink className="button secondary" href="/demo">{t('landing.openDemo')}</RouteLink></section>}
+          <div className="account-section" id="account-section" tabIndex={-1}>
+          {section === 'pets' ? <div className="account-pet-grid">{pets.map(item => <article className={`pet-card real-pet-card ${item.id === pet?.id ? 'is-selected' : ''}`} key={item.id}><Photo pet={item} /><div className="pet-card-content"><h2>{item.name}</h2><p className="muted">{t(`account.speciesOptions.${item.species}`)}{item.breed && ` · ${item.breed}`}</p><BirthDetails pet={item} today={today} /><div className="account-card-actions"><button className="button secondary" onClick={() => setModal({ type: 'profile', pet: item })}>{t('viewProfile')}</button><button className="button primary" onClick={() => { setError(null); setModal({ type: 'form', pet: item }); }}>{t('account.edit')}</button></div></div></article>)}</div> : section === 'today' ? <Today key={pet.id} pet={pet} onNavigate={changeSection} /> : section === 'health' ? <Health key={pet.id} pet={pet} today={today} /> : section === 'food' ? <Food key={pet.id} pet={pet} today={today} /> : <section className="account-empty account-unavailable"><Icon name={section} size={44} /><h2>{t(`nav.${section}`)} · {pet.name}</h2><p>{t(`account.notConnected.${section}`)}</p><RouteLink className="button secondary" href="/demo">{t('landing.openDemo')}</RouteLink></section>}
+          </div>
         </>}
       </>}
     </main><footer className="account-footer"><RouteLink href="/">{t('landing.backHome')}</RouteLink><span>PetDay</span></footer>
