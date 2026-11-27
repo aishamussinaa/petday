@@ -139,6 +139,23 @@ export function createDemoStore({ t, now = () => new Date() }) {
       fail('API_NOT_FOUND');
     }
     const kind = parts[2], id = parts[3];
+    if (parts.length === 5 && parts[4] === 'restore' && method === 'POST') {
+      const collection = { tasks, meals, health, weights }[kind];
+      const prefix = { tasks: 'TASK', meals: 'MEAL', health: 'HEALTH', weights: 'WEIGHT' }[kind];
+      if (!prefix) fail('API_NOT_FOUND');
+      const expected = body?.version;
+      if (!Number.isSafeInteger(expected) || expected < 2 || expected >= 2147483647) fail('INVALID_INPUT');
+      const item = collection.get(id);
+      if (!item || item.petId !== petId) fail(prefix + '_NOT_FOUND');
+      if (!item.deletedAt && item.version === expected + 1) return null;
+      if (!item.deletedAt || item.version !== expected) fail(prefix + '_CHANGED');
+      const stop = kind === 'tasks' && routines.get(item.routineId)?.stopDay;
+      if (stop && item.day >= stop) fail('TASK_CHANGED');
+      item.deletedAt = null;
+      item.version++;
+      if (kind === 'tasks') event(item, 'restored');
+      return null;
+    }
     if (kind === 'tasks' && id === 'weekly' && method === 'GET') {
       const end = url.searchParams.get('end');
       if (!dateValid(end, today()) || end < '1900-01-07') fail('TASK_DATE');

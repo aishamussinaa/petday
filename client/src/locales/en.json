@@ -376,7 +376,8 @@
       "edited": "Edited: {{title}}",
       "deleted": "Removed from plan: {{title}}",
       "progressed": "Completion added: {{title}}",
-      "reduced": "Completion undone: {{title}}"
+      "reduced": "Completion undone: {{title}}",
+      "restored": "Restored to plan: {{title}}"
     },
     "errors": {
       "TASK_TITLE": "Enter a name of 1–120 characters.",
@@ -613,5 +614,13 @@
     "walkSaved": "Walk logged.",
     "mealSaved": "Feeding added to the diary.",
     "weightSaved": "Weight saved in Health."
+  },
+  "undo": {
+    "heading": "Undo deletion",
+    "action": "Undo",
+    "deleted": "Deleted: {{label}} · {{pet}}",
+    "remaining": "Deleted entries: {{count}}",
+    "unavailable": "This entry changed or is no longer available.",
+    "failed": "Could not restore this entry. Please try again."
   }
 }

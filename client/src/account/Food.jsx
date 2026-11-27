@@ -1,3 +1,4 @@
+import { useDeletionUndo } from './DeletionUndo.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal.jsx';
@@ -40,6 +41,7 @@ function MealForm({ meal, day, onClose, onSave }) {
 }
 
 export default function Food({ pet, today }) {
+  const { offer, revision } = useDeletionUndo();
   const request = useApi();
   const { t, i18n } = useTranslation();
   const currentDay = dayKey(today);
@@ -54,7 +56,7 @@ export default function Food({ pet, today }) {
     catch (failure) { if (current === generation.current) { setError(failure.code); setMeals([]); } }
     finally { if (current === generation.current) setLoading(false); }
   }
-  useEffect(() => { load(); return () => { generation.current++; }; }, [day, pet.id]);
+  useEffect(() => { load(); return () => { generation.current++; }; }, [day, pet.id, revision]);
   async function save(draft) {
     try {
       const result = await request(`${base}${modal.meal ? `/${draft.id}` : ''}`, { method: modal.meal ? 'PUT' : 'POST', body: { ...draft, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone } });
@@ -66,7 +68,7 @@ export default function Food({ pet, today }) {
   async function remove() {
     if (pending.current) return;
     pending.current = true; setBusy(true); setError(null);
-    try { await request(`${base}/${modal.meal.id}`, { method: 'DELETE', body: { version: modal.meal.version } }); setMeals(previous => previous.filter(item => item.id !== modal.meal.id)); setModal(null); }
+    try { await request(`${base}/${modal.meal.id}`, { method: 'DELETE', body: { version: modal.meal.version } }); offer(base, modal.meal, pet); setMeals(previous => previous.filter(item => item.id !== modal.meal.id)); setModal(null); }
     catch (failure) { if (['MEAL_CHANGED', 'MEAL_NOT_FOUND'].includes(failure.code)) { setModal(null); await load(); } setError(failure.code); }
     finally { pending.current = false; setBusy(false); }
   }

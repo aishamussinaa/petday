@@ -1,3 +1,4 @@
+import { useDeletionUndo } from './DeletionUndo.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal.jsx';
@@ -23,6 +24,7 @@ export function WeightChart({ records }) {
   </svg>;
 }
 export default function WeightHistory({ pet, today, transport: customTransport }) {
+  const { offer, revision } = useDeletionUndo();
   const contextTransport = useApi();
   const transport = customTransport || contextTransport;
   const { t, i18n } = useTranslation();
@@ -37,7 +39,7 @@ export default function WeightHistory({ pet, today, transport: customTransport }
     catch (failure) { if (current === generation.current) setError(failure.code); }
     finally { if (current === generation.current) setLoading(false); }
   }
-  useEffect(() => { load(); return () => { generation.current++; }; }, [pet.id, transport]);
+  useEffect(() => { load(); return () => { generation.current++; }; }, [pet.id, transport, revision]);
   function open(record) { setError(null); setModal({ type: 'form', edit: Boolean(record), draft: record ? { ...record } : { id: crypto.randomUUID(), date, kg: '', notes: '' } }); }
   async function save(event) {
     event.preventDefault(); if (pending.current) return;
@@ -51,7 +53,7 @@ export default function WeightHistory({ pet, today, transport: customTransport }
   }
   async function remove() {
     if (pending.current) return; pending.current = true; setBusy(true); setError(null);
-    try { await transport(`${base}/${modal.record.id}`, { method: 'DELETE', body: { version: modal.record.version } }); setRecords(previous => previous.filter(record => record.id !== modal.record.id)); setModal(null); }
+    try { await transport(`${base}/${modal.record.id}`, { method: 'DELETE', body: { version: modal.record.version } }); offer(base, modal.record, pet, number(modal.record.kg)); setRecords(previous => previous.filter(record => record.id !== modal.record.id)); setModal(null); }
     catch (failure) { if (['WEIGHT_CHANGED', 'WEIGHT_NOT_FOUND'].includes(failure.code)) { setModal(null); await load(); } setError(failure.code); }
     finally { pending.current = false; setBusy(false); }
   }

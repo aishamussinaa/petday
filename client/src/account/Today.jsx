@@ -1,3 +1,4 @@
+import { useDeletionUndo } from './DeletionUndo.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal.jsx';
@@ -38,6 +39,7 @@ function TaskForm({task,day,onClose,onSaved}){
   </form></Modal>;
 }
 export default function Today({pet,onNavigate}){
+  const { offer, revision } = useDeletionUndo();
   const request = useApi();
   const {t,i18n}=useTranslation();
   const [day,setDay]=useState(dateKey),[items,setItems]=useState([]),[events,setEvents]=useState([]),[routines,setRoutines]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(null),[modal,setModal]=useState(null),[busy,setBusy]=useState(false);
@@ -51,7 +53,7 @@ export default function Today({pet,onNavigate}){
     catch(failure){if(version===generation.current){setError(failure.code);setItems([]);setEvents([]);}}
     finally{if(version===generation.current)setLoading(false);}
   }
-  useEffect(()=>{if(view==='day')load();return()=>{generation.current++;};},[day,pet.id,view]);
+  useEffect(()=>{if(view==='day')load();return()=>{generation.current++;};},[day,pet.id,view,revision]);
   useEffect(()=>{let previous=dateKey();const tick=()=>{const now=dateKey();if(now!==previous){const old=previous;previous=now;setDay(value=>value===old?now:value);setWeekEnd(value=>value===old?now:value);}};const timer=setInterval(tick,30000);document.addEventListener('visibilitychange',tick);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',tick);};},[]);
   const completed=items.filter(item=>item.completedAt).length;
   const timestamp=value=>`${formatDate(new Date(value),i18n.language,{day:'numeric',month:'long'})}, ${new Intl.DateTimeFormat(i18n.language,{hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(value))}`;
@@ -60,6 +62,7 @@ export default function Today({pet,onNavigate}){
     try{
       if(mode==='stop')await request(`${base}/routines/${item.id}/stop`,{method:'POST',body:{timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone}});
       else await request(`${base}/${item.id}${mode==='state'?'/state':['plus','minus'].includes(mode)?'/count':''}`,{method:mode==='delete'?'DELETE':'PATCH',body:{version:item.version,completed:!item.completedAt,delta:mode==='plus'?1:-1,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone}});
+      if(mode==='delete') offer(base, item, pet);
       setModal(null);await load();
     }catch(failure){if(failure.code==='TASK_CHANGED'){await load();}setError(failure.code);}
     finally{pending.current=false;setBusy(false);}

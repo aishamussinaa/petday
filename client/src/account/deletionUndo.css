@@ -1,0 +1,24 @@
+.undo-notice {
+  position: fixed;
+  z-index: 40;
+  bottom: 16px;
+  right: 16px;
+  max-width: min(34rem, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 14px;
+  border: 1px solid var(--ink);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 4px 16px #0002;
+}
+.undo-notice div { flex: 1 1 11rem; min-width: 0; overflow-wrap: anywhere; }
+.undo-notice small { display: block; }
+.undo-notice .button { min-height: 44px; padding: 8px 14px; font-size: 16px; }
+.undo-notice p { margin: 0; flex-basis: 100%; }
+@media (max-width: 600px) {
+  .undo-notice { bottom: calc(90px + env(safe-area-inset-bottom)); left: 8px; right: 8px; max-width: none; }
+}

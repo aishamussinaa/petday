@@ -1,3 +1,4 @@
+import { useDeletionUndo } from './DeletionUndo.jsx';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from './ApiContext.jsx';
@@ -8,6 +9,7 @@ import Icon from '../components/Icon.jsx';
 import './event-calendar.css';
 
 export default function EventCalendar({ pets, today, onOpen }) {
+  const { revision } = useDeletionUndo();
   const { t, i18n } = useTranslation();
   const request = useApi();
   const [month, setMonth] = useState(() => dayKey(today).slice(0, 7));
@@ -28,7 +30,7 @@ export default function EventCalendar({ pets, today, onOpen }) {
       setLoad({ journals, missing });
     });
     return () => { active = false; };
-  }, [request, pets, attempt]);
+  }, [request, pets, attempt, revision]);
 
   function showMonth(value) { setMonth(value); setDay(''); }
   const first = localDay(month + '-01');

@@ -1,3 +1,4 @@
+import { useDeletionUndo } from './DeletionUndo.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../components/Modal.jsx';
@@ -45,6 +46,7 @@ function HealthForm({ record, kind, today, onClose, onSave }) {
 }
 
 export default function Health({ pet, today, initialRecord }) {
+  const { offer, revision } = useDeletionUndo();
   const request = useApi();
   const { t, i18n } = useTranslation();
   const [records, setRecords] = useState([]), [loading, setLoading] = useState(true), [error, setError] = useState(null);
@@ -57,7 +59,7 @@ export default function Health({ pet, today, initialRecord }) {
     catch (failure) { if (current === generation.current) { setError(failure.code); setRecords([]); } }
     finally { if (current === generation.current) setLoading(false); }
   }
-  useEffect(() => { load(); return () => { generation.current++; }; }, [pet.id]);
+  useEffect(() => { load(); return () => { generation.current++; }; }, [pet.id, revision]);
   async function save(draft) {
     try {
       const { record } = await request(`${base}${modal.record ? `/${draft.id}` : ''}`, { method: modal.record ? 'PUT' : 'POST', body: { ...draft, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone } });
@@ -67,7 +69,7 @@ export default function Health({ pet, today, initialRecord }) {
   async function remove() {
     if (pending.current) return;
     pending.current = true; setBusy(true); setError(null);
-    try { await request(`${base}/${modal.record.id}`, { method: 'DELETE', body: { version: modal.record.version } }); setRecords(previous => previous.filter(item => item.id !== modal.record.id)); setModal(null); }
+    try { await request(`${base}/${modal.record.id}`, { method: 'DELETE', body: { version: modal.record.version } }); offer(base, modal.record, pet); setRecords(previous => previous.filter(item => item.id !== modal.record.id)); setModal(null); }
     catch (failure) { if (['HEALTH_CHANGED', 'HEALTH_NOT_FOUND'].includes(failure.code)) { setModal(null); await load(); } setError(failure.code); }
     finally { pending.current = false; setBusy(false); }
   }

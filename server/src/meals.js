@@ -1,3 +1,4 @@
+import { addRestoreRoute } from './restore.js';
 import { Router } from 'express';
 import { database } from './db.js';
 import { session, requireUser, csrf } from './auth.js';
@@ -61,3 +62,4 @@ async function mutate(req, res, remove) {
 }
 meals.put('/:id', csrf, (req, res) => mutate(req, res, false));
 meals.delete('/:id', csrf, (req, res) => mutate(req, res, true));
+addRestoreRoute(meals, 'meal', 'MEAL');

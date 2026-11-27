@@ -1,3 +1,4 @@
+import { useDeletionUndo } from './DeletionUndo.jsx';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from './ApiContext.jsx';
@@ -6,6 +7,7 @@ import { formatDate } from '../dateUtils.js';
 import './care.css';
 
 export default function DayOverview({ pet, day, tasks, onNavigate, demoData }) {
+  const { revision } = useDeletionUndo();
   const request = useApi();
   const { t, i18n } = useTranslation();
   const [data, setData] = useState(null), [retry, setRetry] = useState(0);
@@ -18,7 +20,7 @@ export default function DayOverview({ pet, day, tasks, onNavigate, demoData }) {
       if (active) setData({ records: health.status === 'fulfilled' ? health.value.records : null, meals: food.status === 'fulfilled' ? food.value.meals : null });
     });
     return () => { active = false; };
-  }, [pet.id, day, retry, demoData]);
+  }, [pet.id, day, retry, demoData, revision]);
   if (day !== dayKey(now)) return null;
   const done = tasks.reduce((sum, item) => sum + item.completedCount, 0), total = tasks.reduce((sum, item) => sum + item.targetCount, 0);
   const clock = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;

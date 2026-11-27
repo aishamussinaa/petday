@@ -1,3 +1,4 @@
+import { addRestoreRoute } from './restore.js';
 import { Router } from 'express';
 import { database } from './db.js';
 import { session, requireUser, csrf } from './auth.js';
@@ -60,3 +61,4 @@ async function mutate(req, res, remove) {
 }
 health.put('/:id', csrf, (req, res) => mutate(req, res, false));
 health.delete('/:id', csrf, (req, res) => mutate(req, res, true));
+addRestoreRoute(health, 'healthRecord', 'HEALTH');

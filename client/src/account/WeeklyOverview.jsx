@@ -1,3 +1,4 @@
+import { useDeletionUndo } from './DeletionUndo.jsx';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from './ApiContext.jsx';
@@ -7,6 +8,7 @@ import { shiftDay } from '../../../shared/weekly.js';
 import './weekly.css';
 
 export default function WeeklyOverview({ pet, end, onEnd, onDay }) {
+  const { revision } = useDeletionUndo();
   const request = useApi(), { t, i18n } = useTranslation();
   const [state, setState] = useState({ loading: true }), [retry, setRetry] = useState(0);
   const today = dayKey();
@@ -16,7 +18,7 @@ export default function WeeklyOverview({ pet, end, onEnd, onDay }) {
       .then(data => { if (active) setState({ data }); })
       .catch(() => { if (active) setState({ error: true }); });
     return () => { active = false; };
-  }, [pet.id, end, retry, request]);
+  }, [pet.id, end, retry, request, revision]);
   const date = value => formatDate(localDay(value), i18n.language, { day: 'numeric', month: 'short', year: 'numeric' });
   const number = value => new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 3 }).format(value);
   const { data } = state;

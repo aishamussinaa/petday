@@ -1,3 +1,4 @@
+import { addRestoreRoute } from './restore.js';
 import { shiftDay, weeklySummary } from '../../shared/weekly.js';
 import { Router } from 'express';
 import { randomUUID } from 'node:crypto';
@@ -149,3 +150,4 @@ tasks.patch('/:id/state',csrf,(req,res)=>mutate(req,res,'state'));
 tasks.patch('/:id/count',csrf,(req,res)=>mutate(req,res,'count'));
 tasks.put('/:id',csrf,(req,res)=>mutate(req,res,'edit'));
 tasks.delete('/:id',csrf,(req,res)=>mutate(req,res,'delete'));
+addRestoreRoute(tasks, 'careTask', 'TASK');

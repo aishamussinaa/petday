@@ -1,3 +1,4 @@
+import { addRestoreRoute } from './restore.js';
 import { Router } from 'express';
 import { database } from './db.js';
 import { session, requireUser, csrf } from './auth.js';
@@ -49,3 +50,4 @@ async function mutate(req, res, remove) {
 }
 weights.put('/:id', csrf, (req, res) => mutate(req, res, false));
 weights.delete('/:id', csrf, (req, res) => mutate(req, res, true));
+addRestoreRoute(weights, 'weightRecord', 'WEIGHT');
