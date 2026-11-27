@@ -1,0 +1,13 @@
+.vet-summary { overflow-wrap: anywhere; }
+.vet-pet { margin: 0 0 1rem; font-size: 1.25rem; font-weight: 700; }
+.vet-summary .vet-fields { margin-bottom: 1rem; }
+.vet-fields .form-columns > div, .vet-fields input { min-width: 0; }
+.vet-section { border-top: 1px solid var(--line); padding: 1rem 0; }
+.vet-section h3 { margin: 0 0 .5rem; }
+.vet-section h3 span { font-size: .9rem; border-radius: 1rem; padding: .15rem .55rem; background: var(--sage); }
+.vet-section ul { margin: .5rem 0 0; padding-inline-start: 1.25rem; }
+.vet-section li + li { margin-top: .75rem; }
+.vet-section p { margin: .25rem 0; white-space: pre-line; }
+.vet-trend { font-weight: 600; }
+.health-reports { display: flex; flex-wrap: wrap; align-items: baseline; gap: .75rem; margin: 1rem 0; }
+.health-reports .report-download { margin: 0; }

@@ -38,6 +38,7 @@ PetDay updates the completed count on today's walking task. The demo keeps that 
 - **Health journal:** vaccinations and veterinary visits, planned/completed status, clinic, vet, notes and optional follow-up dates.
 - **Weight history:** dated measurements in kilograms, a trend chart, an accessible text list, editing and deletion.
 - **Feeding diary:** food type, time, optional portion size and notes. Totals are calculated separately for grams, millilitres and pieces.
+- **Vet summary:** open Health, choose a date range and preview vaccinations, vet visits and weight measurements. The PDF includes the same records and the change from the first to the last weight in that period.
 - **PDF export:** download a pet's profile, allergies, veterinary records and weight history. Cyrillic and Kazakh characters are supported through an embedded local font.
 - **Light and dark themes:** a round moon/sun toggle, system preference detection and a saved preference shared across tabs.
 - **Keyboard access:** Tab/Shift+Tab navigation, visible focus, skip links, Enter activation, and modal focus management with Escape support.

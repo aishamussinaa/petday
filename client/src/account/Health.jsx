@@ -7,6 +7,7 @@ import { formatDate } from '../dateUtils.js';
 import { useApi } from './ApiContext.jsx';
 import './health.css';
 import WeightHistory from './WeightHistory.jsx';
+import VetSummary from './VetSummary.jsx';
 import ReportButton from './ReportButton.jsx';
 
 const dayKey = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -77,7 +78,11 @@ export default function Health({ pet, today, initialRecord }) {
   const showDate = value => formatDate(localDay(value), i18n.language, { day: 'numeric', month: 'long', year: 'numeric' });
   return <section className="health-panel" aria-label={t('medical.heading', { name: pet.name })}>
     <header className="health-heading"><div><p className="eyebrow">{t('medical.eyebrow')}</p><h2>{t('medical.heading', { name: pet.name })}</h2><p className="muted">{t('medical.intro')}</p></div><div className="health-add"><button className="button primary" onClick={() => setModal({ type: 'form', kind: 'vaccine' })}><Icon name="plus" />{t('medical.addVaccine')}</button><button className="button secondary" onClick={() => setModal({ type: 'form', kind: 'visit' })}><Icon name="plus" />{t('medical.addVisit')}</button></div></header>
-    <ReportButton pet={pet} />
+    <div className="health-reports">
+      <button className="button secondary" onClick={() => setModal({ type: 'summary' })}>{t('vet.title')}</button>
+      <ReportButton pet={pet} />
+    </div>
+    {modal?.type === 'summary' && <VetSummary pet={pet} today={date} onClose={() => setModal(null)} />}
     {pet.allergies && <aside className="health-allergies"><strong>{t('account.allergies')}</strong><p>{pet.allergies}</p></aside>}
     <div className="health-filters" role="group" aria-label={t('medical.filter')}>{['all', 'vaccine', 'visit'].map(value => <button key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{t(`medical.${value}`)}</button>)}</div>
     <ErrorNotice code={error} />{error && <button className="button secondary" onClick={load}>{t('account.retry')}</button>}

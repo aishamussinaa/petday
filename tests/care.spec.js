@@ -61,6 +61,13 @@ test('care UI: daily summary, partial failure, weight CRUD and PDF download', as
   await dialog.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(dialog).not.toBeVisible();await expect(panel.locator('.weight-latest')).toContainText('3,4 кг');
   await page.reload();await page.locator('.account-nav').getByRole('button',{name:'Здоровье',exact:true}).click();await expect(panel.locator('.weight-latest')).toContainText('3,4 кг');
   await panel.locator('summary').click();await panel.getByRole('button',{name:'Редактировать',exact:true}).click();await dialog.getByLabel('Вес, кг').fill('3.55');await dialog.getByRole('button',{name:'Сохранить',exact:true}).click();await expect(panel.locator('.weight-latest')).toContainText('3,55 кг');
+  await page.getByRole('button', {name:'Сводка для ветеринара'}).click();
+  await expect(dialog.locator('.vet-section').nth(1)).toContainText('Плановый осмотр');
+  await expect(dialog.locator('.vet-section').nth(2)).toContainText('3,55 кг');
+  await dialog.getByLabel('Период').selectOption('30');
+  await expect(dialog.locator('.vet-section').nth(1)).toContainText('За этот период записей нет.');
+  await expect(dialog.locator('.vet-section').nth(2)).toContainText('3,55 кг');
+  await page.keyboard.press('Escape');
   const downloaded=page.waitForEvent('download');await page.getByRole('button',{name:'Скачать отчёт PDF'}).click();const file=await downloaded;await file.saveAs(info.outputPath('account-report.pdf'));expect((await fs.readFile(info.outputPath('account-report.pdf'))).subarray(0,5).toString()).toBe('%PDF-');
   await page.setViewportSize({width:390,height:900});await page.getByRole('button',{name:'Включить тёмную тему'}).click();await page.screenshot({path:info.outputPath('health-mobile.png'),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await panel.getByRole('button',{name:'Удалить',exact:true}).click();await dialog.getByRole('button',{name:'Отмена',exact:true}).click();await expect(panel.locator('.weight-history li')).toHaveCount(1);

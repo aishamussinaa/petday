@@ -453,6 +453,24 @@
     "motionOn": "Turn animation on",
     "reduced": "Animation is disabled in your device settings."
   },
+  "vet": {
+    "30": "Last 30 days",
+    "90": "Last 90 days",
+    "title": "Vet summary",
+    "period": "Period",
+    "all": "All dates",
+    "custom": "Custom dates",
+    "from": "From",
+    "to": "Through",
+    "vaccine": "Vaccinations",
+    "visit": "Vet visits",
+    "needTwo": "A second measurement in this period is needed to calculate the change.",
+    "change": "From {{first}} to {{last}} (change {{change}})",
+    "empty": "No records in this period.",
+    "invalid": "Choose a valid start and end date from 1900 through 2100. The end date must be on or after the start date.",
+    "download": "Download summary PDF",
+    "loadError": "Could not load the health records."
+  },
   "medical": {
     "eyebrow": "Care journal",
     "heading": "Health · {{name}}",
