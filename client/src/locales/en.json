@@ -1,4 +1,15 @@
 {
+  "walkTour": {
+    "title": "{{name}} · try a walk",
+    "hint": "Log one walk to see how it changes the seven-day total.",
+    "daily": "Today’s goal",
+    "weekly": "Walks this week",
+    "saved": "Your walk counts toward both totals.",
+    "complete": "Goal reached",
+    "logged": "Walk logged",
+    "record": "Log a walk",
+    "report": "Open weekly report"
+  },
   "landing": {
     "menu": "Menu",
     "home": "PetDay home",

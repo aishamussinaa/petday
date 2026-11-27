@@ -7,7 +7,7 @@ import { formatDate } from '../dateUtils.js';
 import { shiftDay } from '../../../shared/weekly.js';
 import './weekly.css';
 
-export default function WeeklyOverview({ pet, end, onEnd, onDay }) {
+export default function WeeklyOverview({ pet, end, onEnd, onDay, headingRef }) {
   const { revision } = useDeletionUndo();
   const request = useApi(), { t, i18n } = useTranslation();
   const [state, setState] = useState({ loading: true }), [retry, setRetry] = useState(0);
@@ -23,7 +23,7 @@ export default function WeeklyOverview({ pet, end, onEnd, onDay }) {
   const number = value => new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 3 }).format(value);
   const { data } = state;
   return <section className="weekly-panel" aria-label={t('weekly.title')} aria-busy={Boolean(state.loading)}>
-    <header className="weekly-header"><div><h3>{t('weekly.title')}</h3><p>{t('weekly.period', { start: date(shiftDay(end, -6)), end: date(end) })}</p></div><label>{t('weekly.end')}<input type="date" min="1900-01-07" max={today} value={end} onChange={event => { if (event.target.validity.valid && event.target.value) onEnd(event.target.value); }} /></label></header>
+    <header className="weekly-header"><div><h3 tabIndex={-1} ref={headingRef}>{t('weekly.title')}</h3><p>{t('weekly.period', { start: date(shiftDay(end, -6)), end: date(end) })}</p></div><label>{t('weekly.end')}<input type="date" min="1900-01-07" max={today} value={end} onChange={event => { if (event.target.validity.valid && event.target.value) onEnd(event.target.value); }} /></label></header>
     <div className="weekly-controls"><button className="button secondary" disabled={end < '1900-01-14'} onClick={() => onEnd(shiftDay(end, -7))}>{t('weekly.previous')}</button><button className="button secondary" disabled={end >= today} onClick={() => onEnd(shiftDay(end, 7) > today ? today : shiftDay(end, 7))}>{t('weekly.next')}</button><button className="text-link" disabled={end === today} onClick={() => onEnd(today)}>{t('weekly.current')}</button></div>
     {state.loading ? <p role="status">{t('account.loading')}</p> : state.error ? <p role="alert">{t('weekly.error')} <button className="text-link" onClick={() => setRetry(value => value + 1)}>{t('account.retry')}</button></p> : data && <>
       <p className="weekly-hint">{t('weekly.hint')}</p>

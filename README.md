@@ -6,6 +6,8 @@ A pet care web application built with **React, Node.js and PostgreSQL**. Keep pe
 
 **Portfolio project · actively developed.** The public demo runs without an account. The full application stores each user's data in a private local account.
 
+In the [interactive demo](https://petday-aisha-demo.dryduet3.chatgpt.site/demo), log a walk for Tommy to see his daily goal and seven-day total update, then open the weekly report.
+
 ![Today dashboard](docs/screenshots/today-desktop.png)
 
 ## Features

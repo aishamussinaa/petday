@@ -1,6 +1,8 @@
 import { useDeletionUndo } from './DeletionUndo.jsx';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { createPortal } from 'react-dom';
+import WalkTour from '../data/WalkTour.jsx';
 import Modal from '../components/Modal.jsx';
 import Icon from '../components/Icon.jsx';
 import { formatDate, formatTime } from '../dateUtils.js';
@@ -38,7 +40,7 @@ function TaskForm({task,day,onClose,onSaved}){
     <ErrorNotice code={error}/><div className="modal-actions"><button className="button secondary" type="button" disabled={busy} onClick={onClose}>{t('cancel')}</button><button className="button primary" disabled={busy}>{t(busy?'account.saving':'account.save')}</button></div>
   </form></Modal>;
 }
-export default function Today({pet,onNavigate}){
+export default function Today({pet,onNavigate,tourHost}){
   const { offer, revision } = useDeletionUndo();
   const request = useApi();
   const {t,i18n}=useTranslation();
@@ -55,6 +57,16 @@ export default function Today({pet,onNavigate}){
   }
   useEffect(()=>{if(view==='day')load();return()=>{generation.current++;};},[day,pet.id,view,revision]);
   useEffect(()=>{let previous=dateKey();const tick=()=>{const now=dateKey();if(now!==previous){const old=previous;previous=now;setDay(value=>value===old?now:value);setWeekEnd(value=>value===old?now:value);}};const timer=setInterval(tick,30000);document.addEventListener('visibilitychange',tick);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',tick);};},[]);
+  const weekHeading = useRef(null);
+  const focusReport = useRef(false);
+  useEffect(() => {
+    if (view === 'week' && focusReport.current) {
+      weekHeading.current?.focus();
+      focusReport.current = false;
+    }
+  }, [view]);
+  const tourRoutine = tourHost && routines.find(routine => routine.demoWalk);
+  const tourTask = tourRoutine && items.find(item => item.routineId === tourRoutine.id && item.day === day && item.category === 'walk');
   const completed=items.filter(item=>item.completedAt).length;
   const timestamp=value=>`${formatDate(new Date(value),i18n.language,{day:'numeric',month:'long'})}, ${new Intl.DateTimeFormat(i18n.language,{hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date(value))}`;
   async function mutate(item,mode){
@@ -63,15 +75,19 @@ export default function Today({pet,onNavigate}){
       if(mode==='stop')await request(`${base}/routines/${item.id}/stop`,{method:'POST',body:{timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone}});
       else await request(`${base}/${item.id}${mode==='state'?'/state':['plus','minus'].includes(mode)?'/count':''}`,{method:mode==='delete'?'DELETE':'PATCH',body:{version:item.version,completed:!item.completedAt,delta:mode==='plus'?1:-1,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone}});
       if(mode==='delete') offer(base, item, pet);
-      setModal(null);await load();
+      setModal(null);await load();return true;
     }catch(failure){if(failure.code==='TASK_CHANGED'){await load();}setError(failure.code);}
     finally{pending.current=false;setBusy(false);}
   }
   function shift(offset){const next=localDay(day);next.setDate(next.getDate()+offset);const value=dateKey(next);if(value>='1900-01-01'&&value<='2100-12-31')setDay(value);}
   return <section className="today-panel" aria-label={t('today.heading',{name:pet.name})}>
+    {tourTask && view === 'day' && day === dateKey() && createPortal(
+      <WalkTour key={tourTask.id} pet={pet} day={day} tasks={items} task={tourTask} disabled={loading || busy || Boolean(error)}
+        onRecord={task => mutate(task, 'plus')}
+        onReport={() => { focusReport.current = true; setWeekEnd(day); setView('week'); }} />, tourHost)}
     <div className="today-heading"><div><p className="eyebrow">{t('today.eyebrow')}</p><h2>{t('today.heading',{name:pet.name})}</h2></div>{view==='day'&&<button className="button primary" disabled={busy} onClick={()=>setModal({type:'form'})}><Icon name="plus"/>{t('today.add')}</button>}</div>
     <div className="today-view" role="group" aria-label={t('weekly.view')}><button aria-pressed={view==='day'} onClick={()=>setView('day')}>{t('weekly.day')}</button><button aria-pressed={view==='week'} onClick={()=>{setWeekEnd(day>dateKey()?dateKey():day<'1900-01-07'?'1900-01-07':day);setView('week');}}>{t('weekly.week')}</button></div>
-    {view==='week'?<WeeklyOverview pet={pet} end={weekEnd} onEnd={setWeekEnd} onDay={value=>{setDay(value);setView('day');}}/>:<>
+    {view==='week'?<WeeklyOverview headingRef={weekHeading} pet={pet} end={weekEnd} onEnd={setWeekEnd} onDay={value=>{setDay(value);setView('day');}}/>:<>
     <div className="today-dates"><button className="button secondary" aria-label={t('today.previous')} disabled={busy||loading} onClick={()=>shift(-1)}>←</button><label>{t('today.date')}<input aria-label={t('today.date')} type="date" min="1900-01-01" max="2100-12-31" value={day} disabled={busy} onChange={e=>{if(e.target.validity.valid&&e.target.value)setDay(e.target.value);}}/></label><button className="button secondary" aria-label={t('today.next')} disabled={busy||loading} onClick={()=>shift(1)}>→</button><button className="button secondary" disabled={busy} onClick={()=>setDay(dateKey())}>{t('nav.today')}</button></div>
     <p className="muted">{formatDate(localDay(day),i18n.language,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
     {day===dateKey() && <QuickActions key={day} pet={pet} day={day} tasks={items} disabled={loading || busy || Boolean(error)} refreshTasks={load} refreshMeals={() => setMealRevision(value => value + 1)} />}
