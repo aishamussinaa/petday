@@ -5,6 +5,7 @@ import { useApi } from './ApiContext.jsx';
 import { dayKey, localDay } from './careOverview.js';
 import { formatDate } from '../dateUtils.js';
 import { monthEvents } from './events.js';
+import CalendarDownload from './CalendarDownload.jsx';
 import Icon from '../components/Icon.jsx';
 import './event-calendar.css';
 
@@ -77,6 +78,7 @@ export default function EventCalendar({ pets, today, onOpen }) {
         <div><time dateTime={event.date}>{formatDate(localDay(event.date), i18n.language)}</time>
           <button className="event-entry" onClick={() => onOpen(event)}>{event.record?.title || label(event)} · {event.pet.name}</button>
           <small>{event.record ? label(event) + ' · ' + t(event.followUp ? 'medical.nextDate' : 'medical.' + event.record.status) : t(event.pet.birthApproximate ? 'party.approximate' : 'viewProfile')}</small>
+          {event.record && <CalendarDownload pet={event.pet} record={event.record} followUp={event.followUp} />}
         </div></li>)}</ul>
     </section></div>
   </section>;

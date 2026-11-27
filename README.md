@@ -27,7 +27,7 @@ PetDay updates the completed count on today's walking task. The demo keeps that 
 
 - **Pet profiles:** photos with crop and zoom controls, species, breed, birthday, allergies and notes.
 - **Daily care:** one-off tasks, daily or weekly routines, and goals such as three walks a day. Track completion, undo a step and review activity history.
-- **Event calendar:** browse vaccinations, veterinary visits, follow-up dates and annual birthdays across all pets. Select a month, day or pet, then open the original record.
+- **Event calendar:** browse vaccinations, veterinary visits, follow-up dates and annual birthdays across all pets. Select a month, day or pet, then open the original record. Download a vaccination, vet visit or follow-up as an all-day iCalendar (.ics) event from Health or the calendar agenda.
 - **Weekly overview:** a seven-day care summary per pet, including completed care steps, walks, days with all planned goals met, meal counts and weight change. Select any day to open its tasks. Unvisited repeating tasks count toward the plan; deleted instances stay excluded.
 - **Mobile workspace:** fixed bottom navigation, compact demo guidance and large touch controls.
 - **Undo deletion:** restore recently deleted tasks, meals, health records and weight measurements from the notification. Multiple deletions can be undone in reverse order during the current workspace session.

@@ -623,6 +623,8 @@
     "error": "Could not load the weekly overview. Please try again."
   },
   "eventsView": {
+    "addToCalendar": "Add to my calendar",
+    "addFollowUp": "Add follow-up date to calendar",
     "title": "Event calendar",
     "allPets": "All pets",
     "current": "This month",
