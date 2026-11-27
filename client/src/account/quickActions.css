@@ -1,0 +1,6 @@
+.quick-actions { padding: 16px 20px; margin: 20px 0; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; }
+.quick-actions h3 { margin: 0 0 12px; font: 700 21px/1.3 var(--display); }
+.quick-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.quick-buttons .button { min-height: 44px; padding: 9px 16px; font-size: 16px; }
+.quick-actions p { margin: 12px 0 0; }
+@media(max-width: 460px) { .quick-buttons .button { flex: 1 1 135px; } }

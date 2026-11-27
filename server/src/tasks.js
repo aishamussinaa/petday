@@ -100,7 +100,16 @@ tasks.post('/',csrf,async(req,res)=>{
   const data=fields(req.body), selected=day(req.body.day);
   if (!uuid(req.body.id)) throw new ApiError(400,'INVALID_INPUT');
   try {
-    const task=await database().careTask.create({data:{...data,id:req.body.id,petId:req.params.petId,day:selected,events:{create:{action:'created',title:data.title,version:1}}}});
+    const loggedWalk = req.body.logCompletedWalk === true;
+    if (loggedWalk && (data.category !== 'walk' || data.targetCount !== 1)) throw new ApiError(400,'INVALID_INPUT');
+    if (loggedWalk && req.body.day > todayInZone(req.body.timeZone)) throw new ApiError(400,'TASK_FUTURE');
+    const progress = loggedWalk ? { completedCount: 1, completedAt: new Date() } : {};
+    const event = loggedWalk
+      ? { action: 'completed', title: data.title, version: 1, completedCount: 1, targetCount: 1 }
+      : { action: 'created', title: data.title, version: 1 };
+    const task = await database().careTask.create({ data: {
+      ...data, ...progress, id: req.body.id, petId: req.params.petId, day: selected, events: { create: event },
+    } });
     res.status(201).json({task:publicTask(task)});
   } catch(error) {
     if(error.code!=='P2002') throw error;

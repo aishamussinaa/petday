@@ -170,7 +170,12 @@ export function createDemoStore({ t, now = () => new Date() }) {
       }
       if (!id && method === 'POST') {
         const value = taskFields(body); if (!dateValid(body.day)) fail('TASK_DATE'); const existed = tasks.has(body.id);
-        const task = create(tasks, { ...value, id: body.id, day: body.day, routineId: null, completedCount: 0, completedAt: null }, petId, 'TASK_CHANGED'); if (!existed) event(task, 'created'); return { task };
+        const loggedWalk = body.logCompletedWalk === true;
+        if (loggedWalk && (value.category !== 'walk' || value.targetCount !== 1)) fail('INVALID_INPUT');
+        if (loggedWalk && body.day > today()) fail('TASK_FUTURE');
+        const task = create(tasks, { ...value, id: body.id, day: body.day, routineId: null, completedCount: loggedWalk ? 1 : 0, completedAt: loggedWalk ? tasks.get(body.id)?.completedAt || timestamp() : null }, petId, 'TASK_CHANGED');
+        if (!existed) event(task, loggedWalk ? 'completed' : 'created');
+        return { task };
       }
       const task = owned(tasks, id, petId, 'TASK_NOT_FOUND'); version(task, body, 'TASK_CHANGED'); let action;
       if (method === 'PATCH' && ['count', 'state'].includes(parts[4])) {

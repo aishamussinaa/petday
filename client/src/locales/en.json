@@ -604,5 +604,14 @@
     "emptyDay": "No events on this day.",
     "emptyMonth": "No events this month.",
     "error": "Could not load health records for {{pets}}."
+  },
+  "quick": {
+    "heading": "Quick actions",
+    "walk": "Log a walk",
+    "meal": "Log a feeding",
+    "mealName": "Feeding",
+    "walkSaved": "Walk logged.",
+    "mealSaved": "Feeding added to the diary.",
+    "weightSaved": "Weight saved in Health."
   }
 }

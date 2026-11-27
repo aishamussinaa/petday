@@ -4,6 +4,7 @@ import Modal from '../components/Modal.jsx';
 import Icon from '../components/Icon.jsx';
 import { formatDate, formatTime } from '../dateUtils.js';
 import { useApi } from './ApiContext.jsx';
+import QuickActions from './QuickActions.jsx';
 import DayOverview from './DayOverview.jsx';
 import WeeklyOverview from './WeeklyOverview.jsx';
 
@@ -41,6 +42,7 @@ export default function Today({pet,onNavigate}){
   const {t,i18n}=useTranslation();
   const [day,setDay]=useState(dateKey),[items,setItems]=useState([]),[events,setEvents]=useState([]),[routines,setRoutines]=useState([]),[loading,setLoading]=useState(true),[error,setError]=useState(null),[modal,setModal]=useState(null),[busy,setBusy]=useState(false);
   const [view,setView]=useState('day'),[weekEnd,setWeekEnd]=useState(dateKey);
+  const [mealRevision,setMealRevision]=useState(0);
   const generation=useRef(0),pending=useRef(false);
   const base=`/pets/${pet.id}/tasks`;
   async function load(){
@@ -69,9 +71,10 @@ export default function Today({pet,onNavigate}){
     {view==='week'?<WeeklyOverview pet={pet} end={weekEnd} onEnd={setWeekEnd} onDay={value=>{setDay(value);setView('day');}}/>:<>
     <div className="today-dates"><button className="button secondary" aria-label={t('today.previous')} disabled={busy||loading} onClick={()=>shift(-1)}>←</button><label>{t('today.date')}<input aria-label={t('today.date')} type="date" min="1900-01-01" max="2100-12-31" value={day} disabled={busy} onChange={e=>{if(e.target.validity.valid&&e.target.value)setDay(e.target.value);}}/></label><button className="button secondary" aria-label={t('today.next')} disabled={busy||loading} onClick={()=>shift(1)}>→</button><button className="button secondary" disabled={busy} onClick={()=>setDay(dateKey())}>{t('nav.today')}</button></div>
     <p className="muted">{formatDate(localDay(day),i18n.language,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
+    {day===dateKey() && <QuickActions key={day} pet={pet} day={day} tasks={items} disabled={loading || busy || Boolean(error)} refreshTasks={load} refreshMeals={() => setMealRevision(value => value + 1)} />}
     <ErrorNotice code={error}/>{error&&<button className="button secondary" onClick={load} disabled={busy}>{t('account.retry')}</button>}
     {loading?<p role="status">{t('today.loading')}</p>:<>
-      {!error && <DayOverview pet={pet} day={day} tasks={items} onNavigate={onNavigate} />}
+      {!error && <DayOverview key={mealRevision} pet={pet} day={day} tasks={items} onNavigate={onNavigate} />}
       {items.length>0&&<div className="today-progress"><span role="status">{t('today.progress',{done:completed,total:items.length})}</span><progress aria-label={t('today.progressLabel')} max={items.length} value={completed}/></div>}
       {!items.length&&!error?<div className="today-empty"><Icon name="today" size={44}/><h3>{t('today.empty')}</h3><p>{t('today.emptyText')}</p><button className="button secondary" onClick={()=>setModal({type:'form'})}>{t('today.add')}</button></div>:<ul className="today-list">{items.map(item=><li className={`today-task ${item.completedAt?'is-done':''}`} key={item.id}>
         <div className="today-task-main">{item.targetCount===1&&<input type="checkbox" checked={Boolean(item.completedAt)} disabled={busy||day>dateKey()} aria-label={t('today.toggle',{title:item.title})} onChange={()=>mutate(item,'state')}/>}<span className="today-task-icon"><Icon name={item.category}/></span><div className="today-task-copy"><h3>{item.title}</h3><p className="small muted">{item.time?formatTime(item.time,i18n.language):t('today.anyTime')} · {t(`today.categories.${item.category}`)}{item.routineId&&` · ${t('today.fromRoutine')}`}</p>{item.notes&&<p className="today-note">{item.notes}</p>}{item.targetCount>1&&<div className="goal-counter"><span role="status">{t('today.goalProgress',{done:item.completedCount,total:item.targetCount})}</span><progress aria-label={t('today.goalLabel',{title:item.title})} max={item.targetCount} value={item.completedCount}/><div><button className="button secondary" disabled={busy||day>dateKey()||item.completedCount===0} aria-label={t('today.minusLabel',{title:item.title})} onClick={()=>mutate(item,'minus')}>{t('today.minus')}</button><button className="button primary" disabled={busy||day>dateKey()||item.completedCount>=item.targetCount} aria-label={t('today.plusLabel',{title:item.title})} onClick={()=>mutate(item,'plus')}>{t('today.plus')}</button></div></div>}{item.completedAt&&<p className="today-done-time">{t('today.doneAt',{time:timestamp(item.completedAt)})}</p>}</div></div>
