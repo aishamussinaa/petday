@@ -24,7 +24,7 @@ test('demo weekly data updates after completion and reset, without creating task
   const {tasks}=await store.request(`${base}?date=2026-11-27`),walk=tasks.find(t=>t.category==='walk');
   await store.request(`${base}/${walk.id}/count`,{method:'PATCH',body:{version:walk.version,delta:1}});expect((await get()).walks).toBe(17);
   expect((await store.request('/pets/uma/tasks/weekly?end=2026-11-27')).walks).toBe(0);
-  expect((await store.request(`${base}/weekly?end=2026-11-20`)).target).toBe(0);
+  expect(await store.request(`${base}/weekly?end=2026-11-20`)).toMatchObject({ walks:14, walkTarget:21 });
   store.reset();expect((await get()).walks).toBe(16);store.dispose();
 });
 
@@ -64,6 +64,9 @@ test('weekly API: owner-only, read-only projection, retry and current data',asyn
     await page.unroute('**/tasks/weekly?**');await page.locator('.weekly-panel').getByRole('button',{name:'Повторить',exact:true}).click();await expect(page.getByTestId('week-steps')).toHaveText('1 / 6');
     await page.locator('.weekly-chart button').first().click();await expect(page.getByLabel('Дата плана',{exact:true})).toHaveValue('2024-06-17');
     await page.getByRole('button',{name:'Добавить выполнение: Walk three times'}).click();await page.getByRole('button',{name:'За неделю',exact:true}).click();await expect(page.getByTestId('week-steps')).toHaveText('2 / 3');
+    await page.locator('.weekly-header input').fill('2024-06-30');
+    await expect(page.getByTestId('previous-week-walks')).toHaveText('2 / 6');
+    await expect(page.locator('.walk-week').last()).toContainText('33%');
   }finally{await db.end();await stranger.dispose();}
 });
 
@@ -72,6 +75,7 @@ test('mobile weekly demo: bottom navigation, keyboard, languages, themes, no API
   await page.setViewportSize({width:390,height:844});await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/demo');
   const nav=page.locator('.account-nav');await expect(nav).toHaveCSS('position','fixed');
   await page.getByRole('button',{name:'За неделю',exact:true}).click();await expect(page.getByTestId('week-walks')).toHaveText('16 / 21');await expect(page.locator('.weekly-chart button')).toHaveCount(7);
+  await page.getByRole('button',{name:'Раньше на неделю'}).click();await expect(page.getByTestId('week-walks')).toHaveText('14 / 21');await expect(page.getByTestId('previous-week-walks')).toHaveText('0 / 0');
   await page.getByRole('button',{name:'Раньше на неделю'}).click();await expect(page.getByTestId('week-steps')).toHaveText('0 / 0');await expect(page.locator('.weekly-chart')).toContainText('Нет плана');
   await page.getByRole('button',{name:'Последние 7 дней',exact:true}).click();await expect(page.getByTestId('week-steps')).toHaveText('17 / 24');
   const end=dayKey();await page.locator('.weekly-chart button').last().click();await expect(page.getByLabel('Дата плана',{exact:true})).toHaveValue(end);

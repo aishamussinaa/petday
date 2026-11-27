@@ -594,6 +594,12 @@
     "shortNotice": "No sign-up needed. Records and photos stay in this tab and reset on refresh."
   },
   "weekly": {
+    "walkComparison": "Two weeks of walks · {{name}}",
+    "selectedWeek": "Selected 7 days",
+    "priorWeek": "Previous 7 days",
+    "walkDifference": "Change in walks from the previous week · {{value}}",
+    "previousError": "Could not load the previous week.",
+    "previousUnavailable": "The previous week falls outside the available date range.",
     "view": "Overview period",
     "day": "Daily",
     "week": "Weekly",

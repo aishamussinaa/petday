@@ -5,6 +5,7 @@ import { useApi } from './ApiContext.jsx';
 import { dayKey, localDay } from './careOverview.js';
 import { formatDate } from '../dateUtils.js';
 import { shiftDay } from '../../../shared/weekly.js';
+import WalkComparison from './WalkComparison.jsx';
 import './weekly.css';
 
 export default function WeeklyOverview({ pet, end, onEnd, onDay, headingRef }) {
@@ -14,8 +15,14 @@ export default function WeeklyOverview({ pet, end, onEnd, onDay, headingRef }) {
   const today = dayKey();
   useEffect(() => {
     let active = true; setState({ loading: true });
-    request(`/pets/${pet.id}/tasks/weekly?end=${end}&timeZone=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}`)
-      .then(data => { if (active) setState({ data }); })
+    const timeZone = encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    const fetchWeek = lastDay => request(`/pets/${pet.id}/tasks/weekly?end=${lastDay}&timeZone=${timeZone}`);
+    const previousEnd = shiftDay(end, -7);
+    const prior = previousEnd >= '1900-01-07'
+      ? fetchWeek(previousEnd).then(previous => ({ previous }), () => ({ previousError: true }))
+      : Promise.resolve({});
+    Promise.all([fetchWeek(end), prior])
+      .then(([data, comparison]) => { if (active) setState({ data, ...comparison }); })
       .catch(() => { if (active) setState({ error: true }); });
     return () => { active = false; };
   }, [pet.id, end, retry, request, revision]);
@@ -27,9 +34,10 @@ export default function WeeklyOverview({ pet, end, onEnd, onDay, headingRef }) {
     <div className="weekly-controls"><button className="button secondary" disabled={end < '1900-01-14'} onClick={() => onEnd(shiftDay(end, -7))}>{t('weekly.previous')}</button><button className="button secondary" disabled={end >= today} onClick={() => onEnd(shiftDay(end, 7) > today ? today : shiftDay(end, 7))}>{t('weekly.next')}</button><button className="text-link" disabled={end === today} onClick={() => onEnd(today)}>{t('weekly.current')}</button></div>
     {state.loading ? <p role="status">{t('account.loading')}</p> : state.error ? <p role="alert">{t('weekly.error')} <button className="text-link" onClick={() => setRetry(value => value + 1)}>{t('account.retry')}</button></p> : data && <>
       <p className="weekly-hint">{t('weekly.hint')}</p>
+      <WalkComparison current={data} previous={state.previous} previousError={state.previousError}
+        petName={pet.name} onRetry={() => setRetry(value => value + 1)} />
       <div className="weekly-summary">
         <article><span>{t('weekly.steps')}</span><strong data-testid="week-steps">{data.done} / {data.target}</strong><p>{data.target ? t('weekly.percent', { value: Math.round(data.done / data.target * 100) }) : t('weekly.noPlan')}</p></article>
-        <article><span>{t('weekly.walks')}</span><strong data-testid="week-walks">{data.walks} / {data.walkTarget}</strong><p>{t('weekly.walkHint')}</p></article>
         <article><span>{t('weekly.completeDays')}</span><strong data-testid="week-days">{data.completeDays} / {data.plannedDays}</strong><p>{t('weekly.daysHint')}</p></article>
         <article><span>{t('weekly.meals')}</span><strong data-testid="week-meals">{data.meals}</strong><p>{t('weekly.mealsHint')}</p></article>
       </div>

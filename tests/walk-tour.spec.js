@@ -16,6 +16,10 @@ test('Tommy’s demo walk updates the daily goal and weekly report once', async 
   await expect(page.locator('.goal-counter [role=status]')).toHaveText('2 из 3');
   await tour.getByRole('button', { name: 'Открыть недельный отчёт' }).click();
   await expect(page.getByTestId('week-walks')).toHaveText('17 / 21');
+  await expect(page.getByTestId('previous-week-walks')).toHaveText('14 / 21');
+  await expect(page.locator('.walk-week').first()).toContainText('81%');
+  await expect(page.locator('.walk-week').last()).toContainText('67%');
+  await expect(page.locator('.walk-difference')).toContainText('+3');
   await expect(page.locator('.weekly-header h3')).toBeFocused();
 });
 
